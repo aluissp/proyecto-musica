@@ -1,42 +1,36 @@
 const express = require('express'); // Importamos la libreria
 const path = require('path');
+const morgan = require('morgan');
 const app = express();
 const bodyParser = require('body-parser');
-const { Pool } = require('pg');
 
 // Ajustes
 const port = 3000;
-const config = {
-    user: 'postgres',
-    host: 'localhost',
-    password: '2002',
-    database: 'musica_test',
-    port: '5432'
-}
-const db = new Pool(config);
 
-app.engine('html',require('ejs').renderFile); // Procesar todos lo archivos html con ejs
+
+app.engine('html', require('ejs').renderFile); // Procesar todos lo archivos html con ejs
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, './views'));
-app.set(db);
-// app.use(bodyParser.json());
 
 
 // middlewars
-
+// Son funciones que se ejecutan antes de que vengan las peticiones del usuario (rutas del servidor)
+app.use(morgan('dev'));
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
 // Rutas
 const indexRoute = require('./routes/index').router;
 const loginRoute = require('./routes/login').router;
 
 // Usando rutas
-app.use(indexRoute);
 app.use('/login', loginRoute);
+app.use('/home', indexRoute);
 
 // archivos
 app.use(express.static(path.join(__dirname, 'public')));
 
-// CREACION DE NUESTRA API
+
 app.listen(port, () => {
     console.log(`Server started at port ${port}`);
 });
