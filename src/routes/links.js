@@ -1,10 +1,33 @@
 const express = require('express'); // Importamos la libreria
 const router = express.Router();
 const { db } = require('../conexion');
-router.route('/')
+router.route('/addmusic')
     .get((req, res) => {
-        res.render('login.html');
+        res.render('links/addMusic');
     });
+
+router.route('/addmusic/album')
+    .post( async (req, res) => {
+        const { titulo, fecha, npistas, genero, precio, url } = req.body;
+        const npistas_n = Number(npistas);
+        const precio_n = Number(precio);
+        const nuevoAlbum = [
+            titulo,
+            fecha,
+            npistas_n,
+            genero,
+            precio_n,
+            url
+        ]
+
+        // await db.query('insert into albumes values( $1, $2, $3, $4, $5, $6, $7,$8)', [nuevoAlbum]);
+        await db.query("insert into albumes values( 'ALBM-002', '001', $1, $2, $3, $4, $5,$6)", nuevoAlbum);
+
+        res.send('recibido ');
+    });
+
+
+/*    
 router.route('/ingresar')
     .post(async (req, res) => {
         const { email, clave } = req.body;
@@ -27,6 +50,6 @@ const validar = (fila, claveIngresada) => {
     if (fila[0].contrasena_art === claveIngresada) return true;
     console.log('no mismo pasa');
     return false;
-}
+}*/
 
 exports.router = router;
