@@ -2,12 +2,15 @@ const express = require('express'); // Importamos la libreria
 const router = express.Router();
 const { db } = require('../conexion');
 router.route('/addmusic')
-    .get((req, res) => {
-        res.render('links/addMusic');
+    .get(async (req, res) => {
+
+        const consulta = await db.query("select * from albumes where id_art= $1", ['001']);
+        const albumes = consulta.rows;
+        res.render('links/addMusic', { albumes });
     });
 
 router.route('/addmusic/album')
-    .post( async (req, res) => {
+    .post(async (req, res) => {
         const { titulo, fecha, npistas, genero, precio, url } = req.body;
         const npistas_n = Number(npistas);
         const precio_n = Number(precio);
@@ -21,35 +24,59 @@ router.route('/addmusic/album')
         ]
 
         // await db.query('insert into albumes values( $1, $2, $3, $4, $5, $6, $7,$8)', [nuevoAlbum]);
-        await db.query("insert into albumes values( 'ALBM-002', '001', $1, $2, $3, $4, $5,$6)", nuevoAlbum);
+        await db.query("insert into albumes values( 'ALBM-004', '001', $1, $2, $3, $4, $5,$6)", nuevoAlbum);
 
-        res.send('recibido ');
+        res.redirect('/home/addmusic');
     });
 
+router.route('/addmusic/delete/:id')
+    .get(async (req, res) => {
+        const { id } = req.params;
+        await db.query('delete from albumes where id_al = $1', [id]);
+        res.redirect('/home/addmusic');
+    });
 
-/*    
-router.route('/ingresar')
+router.route('/addmusic/edit/:id')
     .post(async (req, res) => {
-        const { email, clave } = req.body;
-        let pass = false;
+        const { id } = req.params;
+        const { titulo, fecha, npistas, genero, precio, url } = req.body;
+        const npistas_n = Number(npistas);
+        const precio_n = Number(precio);
+        const editAlbum = [
+            titulo,
+            fecha,
+            npistas_n,
+            genero,
+            precio_n,
+            url,
+            id
+        ]
+        const consulta = await db.query('update albumes set titulo_al = $1, fecha_al = $2, numpistas_al = $3, genero_al = $4, precio_al = $5, url_al = $6 where id_al = $7', editAlbum);
 
-        const consulta1 = await db.query('select contrasena_art from artista where email_art= $1', [email]);
-        console.log(consulta1.rows == true);
-        pass = validar(consulta1.rows, clave);
-        if (!pass) {
-            const consulta2 = await db.query('select contrasena_usu from usuarios where email_usu= $1', [email]);
-            pass = validar(consulta2.rows, clave);
-        }
-        let status = pass ? 202 : 400;
-        res.status(status).json({ aceptado: pass });
+        res.redirect('/home/addmusic');
     });
+/*                           Tabla «public.albumes»
+   Columna    |         Tipo          | Ordenamiento | Nulable  | Por omisión
+--------------+-----------------------+--------------+----------+-------------
+ id_al        | character varying(10) |              | not null |
+ id_art       | character varying(10) |              |          |
+ titulo_al    | character varying(50) |              | not null |
+ fecha_al     | date                  |              | not null |
+ numpistas_al | smallint              |              | not null |
+ genero_al    | character varying(30) |              | not null |
+ precio_al    | real                  |              | not null |
+ url_al       | text                  |    
 
-const validar = (fila, claveIngresada) => {
-    if (fila.length <= 0) return false;
-    if (fila[0].contrasena_usu === claveIngresada) return true;
-    if (fila[0].contrasena_art === claveIngresada) return true;
-    console.log('no mismo pasa');
-    return false;
-}*/
+                           Tabla «public.canciones»
+   Columna    |          Tipo          | Ordenamiento | Nulable  | Por omisión
+--------------+------------------------+--------------+----------+-------------
+ id_can       | character varying(10)  |              | not null |
+ id_al        | character varying(10)  |              |          |
+ nombre_can   | character varying(50)  |              | not null |
+ duracion_can | time without time zone |              | not null |
+ nropista_can | smallint               |              | not null |
+ genero_can   | character varying(30)  |              | not null |
+ url_can      | text                   |              |          |
 
+*/
 exports.router = router;

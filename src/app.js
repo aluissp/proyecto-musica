@@ -10,9 +10,11 @@ const hbs = exphbs.create({
     defaultLayaout: 'main',
     layaoutsDir: path.join(app.get('views'), 'layaouts'),
     layaoutsDir: path.join(app.get('views'), 'partials'),
+    // layaoutsDir: path.join(app.get('views'), 'links'),
     extname: '.hbs',
     helpers: require('./lib/handlebars')
 });
+
 app.set('port', process.env.PORT || '3000');
 app.set('views', path.join(__dirname, './views'));
 app.engine('.hbs', hbs.engine);
