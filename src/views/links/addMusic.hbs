@@ -1,8 +1,7 @@
 
 {{> navigation }}
 
-
- <!-- Modal -->
+<!-- Modal -->
 
   <div
     class="modal fade"
@@ -32,35 +31,19 @@
             A simple danger alert—check it out!
           </div>
           <form id="form-edit" method="POST">
-          <div class="row">
-            <div class="col-5 d-flex align-items-center">
-              <label class="m-1">Titulo</label>
-              <input type="text" id="titulo-m" name='titulo' class="form-control ml-2" placeholder="Ingrese el nombre del album" required>
-            </div>
-            <div class="col-7 d-flex align-items-center justify-content-between">
-              <label class="m-0">Fecha</label>
-              <input type="date" id='fecha-m' name="fecha" class="form-control col-9" placeholder="20/02/2020" required>
-            </div>
-            <div class="col-5 d-flex align-items-center justify-content-between my-2">
-                <label class="m-0">Numero de pistas</label>
-                <input type="number" id="npistas-m" name="npistas" class="form-control col-4" placeholder='0' required>
-            </div>
-            <div class="col-7 d-flex align-items-center justify-content-between my-2">
-                <label class="m-0">Genero</label>
-                <input type="text" id="genero-m" name='genero' class="form-control col-9" placeholder="Ingrese el genero" required>
-            </div>
+            <div class="row">
+                <div class="col-7  d-flex align-items-center">
+                  <label class="m-0">Nombre</label>
+                  <input type="text" id="nombre-m" name='nombre' class="form-control ml-2" placeholder="Ingrese el nombre de la cancion" required>
+                </div>
+                <div class="col-5 d-flex align-items-center justify-content-between">
+                    <label class="m-0">Duracion</label>
+                  <div class="col-12">
+                    <input type="time" id="duracion-m" name="duracion" class="form-control col-9" value="00:00:00" step="1" required>
+                  </div>
 
-            <div class="col-5 d-flex aling-items-center justify-content-between">
-                <label class="m-1">Precio</label>
-                <input type="number" id="precio-m" name="precio" class="form-control col-4" placeholder="0.00" step="0.01" required>
+                </div>
             </div>
-
-            <div class="col-7 d-flex aling-items-center">
-              <label class="m-1">URL</label>
-              <input type="text" id="url-m" name='url' class="form-control " placeholder="Ingrese el link del album" required>
-            </div>
-            
-          </div>
           <div class="modal-footer m-2">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
               Cerrar
@@ -81,44 +64,31 @@
         A simple danger alert—check it out!
       </div>
 
-      <!-- Agregar album -->
+      <!-- Agregar cancion -->
+
+{{!--     Tabla «public.canciones»
+    Columna    |          Tipo          | Ordenamiento | Nulable  | Por omisión
+ --------------+------------------------+--------------+----------+-------------
+  id_can       | character varying(10)  |              | not null |
+  id_alb       | character varying(10)  |              |          |
+  nombre_can   | character varying(50)  |              | not null |
+  duracion_can | time without time zone |              | not null |
+  nropista_can | smallint               |              | not null |--}}
 
       <div>
-        <form action="/home/addmusic/album" method="POST" class="d-flex">
+        <form action="/home/addmusic/music/{{idAlbum}}" method="POST" class="d-flex">
           <div class="col-10">
             <div class="row">
-                <div class="col-5 d-flex align-items-center">
-                  <label class="m-1">Titulo</label>
-                  <input type="text" id="titulo" name='titulo' class="form-control ml-2" placeholder="Ingrese el nombre del album" required>
+                <div class="col-7 d-flex align-items-center">
+                  <label class="m-0">Nombre</label>
+                  <input type="text" id="nombre" name='nombre' class="form-control ml-2" placeholder="Ingrese el nombre de la cancion" required>
                 </div>
-                <div class="col-7 d-flex align-items-center justify-content-between">
-                  <label class="m-0">Fecha</label>
-                  <input type="date" name="fecha" class="form-control col-9" placeholder="20/02/2020" required>
+                <div class="col-5 d-flex align-items-center justify-content-between">
+                  <label class="m-0">Duracion</label>
+                  <input type="time" name="duracion" class="form-control col-9" value="00:00:00" step="1" required>
                 </div>
             </div>
 
-            <div class="row">
-              <div class="col-5 d-flex align-items-center justify-content-between my-2">
-                  <label class="m-0">Numero de pistas</label>
-                  <input type="number" id="npistas" name="npistas" class="form-control col-4" placeholder='0' required>
-              </div>
-              <div class="col-7 d-flex align-items-center justify-content-between my-2">
-                  <label class="m-0">Genero</label>
-                  <input type="text" id="genero" name='genero' class="form-control col-9" placeholder="Ingrese el genero" required>
-              </div>
-            </div>
-
-            <div class="row">
-              <div class="col-5 d-flex aling-items-center justify-content-between">
-                <label class="m-1">Precio</label>
-                <input type="number" id="precio" name="precio" class="form-control col-4" placeholder="0.00" step="0.01" required>
-              </div>
-
-              <div class="col-7 d-flex aling-items-center justify-content-between">
-                <label class="m-1">URL</label>
-                <input type="text" id="url" name='url' class="form-control ml-2" placeholder="Ingrese el link del album" required>
-              </div>
-            </div>
           </div>
 
           <div class="col-2 d-flex align-items-center">
@@ -129,10 +99,8 @@
         </form>
       </div>
 
-      {{> listAlbum }}
+    {{> listMusic }}
 
     </div>
   </main>
 
-
-{{!-- href="/home/addmusic/edit/{{id_al}}" --}}

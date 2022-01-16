@@ -1,82 +1,122 @@
 const express = require('express'); // Importamos la libreria
 const router = express.Router();
 const { db } = require('../conexion');
+
+// RUTAS SOLO DE ARTISTAS
+// CRUD ALBUM
 router.route('/addmusic')
     .get(async (req, res) => {
 
-        const consulta = await db.query("select * from albumes where id_art= $1", ['001']);
+        const consulta = await db.query("select * from albumes where id_art= $1", ['art-8']);
         const albumes = consulta.rows;
-        res.render('links/addMusic', { albumes });
+        res.render('links/addAlbum', { albumes });
     });
 
 router.route('/addmusic/album')
     .post(async (req, res) => {
-        const { titulo, fecha, npistas, genero, precio, url } = req.body;
-        const npistas_n = Number(npistas);
+        const { titulo, fecha, npistas, genero, precio } = req.body;
         const precio_n = Number(precio);
         const nuevoAlbum = [
+            'art-8',
             titulo,
-            fecha,
-            npistas_n,
             genero,
             precio_n,
-            url
+            fecha
         ]
 
-        // await db.query('insert into albumes values( $1, $2, $3, $4, $5, $6, $7,$8)', [nuevoAlbum]);
-        await db.query("insert into albumes values( 'ALBM-004', '001', $1, $2, $3, $4, $5,$6)", nuevoAlbum);
+
+        await db.query(`INSERT INTO 
+        albumes(id_art, nombre_alb, genero_alb, precio_alb, fecha_al)
+        VALUES($1, $2, $3, $4, $5)`, nuevoAlbum);
 
         res.redirect('/home/addmusic');
     });
 
-router.route('/addmusic/delete/:id')
+router.route('/addmusic/delete/:idAlbum')
     .get(async (req, res) => {
-        const { id } = req.params;
-        await db.query('delete from albumes where id_al = $1', [id]);
+        const { idAlbum } = req.params;
+        await db.query('delete from albumes where id_alb = $1', [idAlbum]);
         res.redirect('/home/addmusic');
     });
 
-router.route('/addmusic/edit/:id')
+router.route('/addmusic/edit/:idAlbum')
     .post(async (req, res) => {
-        const { id } = req.params;
-        const { titulo, fecha, npistas, genero, precio, url } = req.body;
-        const npistas_n = Number(npistas);
+        const { idAlbum } = req.params;
+        const { titulo, fecha, genero, precio } = req.body;
         const precio_n = Number(precio);
         const editAlbum = [
             titulo,
             fecha,
-            npistas_n,
             genero,
             precio_n,
-            url,
-            id
+            idAlbum
         ]
-        const consulta = await db.query('update albumes set titulo_al = $1, fecha_al = $2, numpistas_al = $3, genero_al = $4, precio_al = $5, url_al = $6 where id_al = $7', editAlbum);
+        await db.query('update albumes set nombre_alb = $1, fecha_al = $2, genero_alb = $3, precio_alb = $4 where id_alb = $5', editAlbum);
 
         res.redirect('/home/addmusic');
     });
-/*                           Tabla «public.albumes»
-   Columna    |         Tipo          | Ordenamiento | Nulable  | Por omisión
---------------+-----------------------+--------------+----------+-------------
- id_al        | character varying(10) |              | not null |
- id_art       | character varying(10) |              |          |
- titulo_al    | character varying(50) |              | not null |
- fecha_al     | date                  |              | not null |
- numpistas_al | smallint              |              | not null |
- genero_al    | character varying(30) |              | not null |
- precio_al    | real                  |              | not null |
- url_al       | text                  |    
 
-                           Tabla «public.canciones»
-   Columna    |          Tipo          | Ordenamiento | Nulable  | Por omisión
---------------+------------------------+--------------+----------+-------------
- id_can       | character varying(10)  |              | not null |
- id_al        | character varying(10)  |              |          |
- nombre_can   | character varying(50)  |              | not null |
- duracion_can | time without time zone |              | not null |
- nropista_can | smallint               |              | not null |
- genero_can   | character varying(30)  |              | not null |
- url_can      | text                   |              |          |
+// CRUD CANCIONES 
+router.route('/addmusic/music/:idAlbum')
+    .get(async (req, res) => {
+        const { idAlbum } = req.params;
+        const consulta = await db.query("select * from canciones where id_alb= $1", [idAlbum]);
+        const consulta2 = await db.query("select genero_alb from albumes where id_alb= $1", [idAlbum]);
+        const canciones = consulta.rows;
+        const genero = consulta2.rows[0].genero_alb;
+        canciones.forEach((cancion) => {
+            cancion.genero = genero
+        });
+        // console.log(canciones);
+        res.render('links/addMusic', { canciones, idAlbum });
+    });
+router.route('/addmusic/music/:idAlbum')
+    .post(async (req, res) => {
+        const { idAlbum } = req.params;
+        const { nombre, duracion } = req.body;
+        const nuevaCancion = [
+            idAlbum,
+            nombre,
+            duracion
+        ]
+        await db.query(`INSERT INTO canciones(
+        id_alb, nombre_can, duracion_can)
+        VALUES ($1, $2, $3)`, nuevaCancion);
 
-*/
+        res.redirect(`/home/addmusic/music/${idAlbum}`);
+    });
+
+router.route('/addmusic/music/delete/:idMusic')
+    .get(async (req, res) => {
+        const { idMusic } = req.params;
+        const consulta = await db.query("select id_alb from canciones where id_can= $1", [idMusic]);
+        const idAlbum = consulta.rows[0].id_alb;
+        await db.query('delete from canciones where id_can = $1', [idMusic]);
+        res.redirect(`/home/addmusic/music/${idAlbum}`);
+    });
+
+router.route('/addmusic/music/edit/:idMusic')
+    .post(async (req, res) => {
+        const { idMusic } = req.params;
+        const { nombre, duracion } = req.body;
+        const consulta = await db.query("select id_alb from canciones where id_can= $1", [idMusic]);
+        const idAlbum = consulta.rows[0].id_alb;
+        const editCancion = [
+            nombre,
+            duracion,
+            idMusic
+        ]
+
+        await db.query('UPDATE canciones set nombre_can = $1, duracion_can = $2 WHERE id_can = $3', editCancion);
+        res.redirect(`/home/addmusic/music/${idAlbum}`);
+    });
+
+/*    Tabla «public.canciones»
+    Columna    |          Tipo          | Ordenamiento | Nulable  | Por omisión
+ --------------+------------------------+--------------+----------+-------------
+  id_can       | character varying(10)  |              | not null |
+  id_alb       | character varying(10)  |              |          |
+  nombre_can   | character varying(50)  |              | not null |
+  duracion_can | time without time zone |              | not null |
+  nropista_can | smallint               |              | not null |*/
 exports.router = router;

@@ -2,13 +2,13 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Eliminar album</h5>
+        <h5 class="modal-title">Eliminar Cancion</h5>
         <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
       <div class="modal-body">
-        <p>Esta seguro que quiere eliminar este album?</p>
+        <p>Esta seguro que quiere eliminar esta cancion?</p>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cerar</button>
@@ -24,9 +24,8 @@
   <table class="table table-striped" id="table">
     <thead>
       <tr>
-        <th scope="col">Album</th>
+        <th scope="col">Cancion</th>
         <th scope="col">Detalles</th>
-        <th scope="col"></th>
         <th scope="col"></th>
         <th scope="col"></th>
         <th scope="col" class="text-center">Acciones</th>
@@ -34,43 +33,40 @@
     </thead>
 
     <tbody>
-      {{#each albumes }}
-      <tr id="{{id_alb}}">
+      {{#each canciones }}
+      <tr id="{{id_can}}">
         <td>
-          {{nombre_alb}}
+          {{nombre_can}}
         </td>
         <td>
-          {{genero_alb}}
+          {{duracion_can}}
         </td>
         <td>
-          $ {{precio_alb}}
-        </td>
-
-        <td>
-          {{dateFormat fecha_al}}
+          {{nropista_can}}
         </td>
         <td>
-          {{numpistas_alb}}
+          {{genero}}
         </td>
         <td class="text-center">
-          <a href="/home/addmusic/music/{{id_alb}}" class="btn btn-primary mb-1">Agregar canciones</a>
           <button class="btn btn-primary mb-1 ml-3" data-bs-toggle="modal" data-bs-target="#modal">
-            <i class="fa fa-pencil"></i>
+            Editar
+            <i class="ml-2 fa fa-pencil"></i>
           </button>
           <button class="btn btn-danger mb-1 ml-3" data-bs-toggle="modal" data-bs-target="#eliminar">
-            <i class="fa fa-trash"></i>
+            Eliminar
+            <i class="ml-2 fa fa-trash"></i>
           </button>
         </td>
       </tr>
       {{/each}}
     </tbody>
   </table>
-
+  
   <div class="d-flex justify-content-end">
 
-    <a class="btn btn-light">
-      <i class="fa fa-chevron-left m-2"></i>
-      REGRESAR</a>
+    <a href='/home/addmusic/' class="btn btn-light">
+    <i class="fa fa-chevron-left m-2"></i>
+    REGRESAR</a>
   </div>
 </div>
 
@@ -81,35 +77,26 @@
     const modalDelete = document.getElementById('modal-delete');
     const form = document.getElementById('form-edit');
 
-    const titulom = document.getElementById('titulo-m');
-    const fecham = document.getElementById('fecha-m');
-    const npistasm = document.getElementById('npistas-m');
-    const generom = document.getElementById('genero-m');
-    const preciom = document.getElementById('precio-m');
+    const nombrem = document.getElementById('nombre-m');
+    const duracionm = document.getElementById('duracion-m');
 
     for (i = 1; i < tabla.rows.length; i++) {
       // Atributos de cada row
       const id = tabla.rows[i].getAttribute('id');
       const titulo = tabla.rows[i].children[0].innerText;
-      const genero = tabla.rows[i].children[1].innerText;
-      const precio = tabla.rows[i].children[2].innerText;
-      const fecha = tabla.rows[i].children[3].innerText;
-      const npistas = tabla.rows[i].children[4].innerText;
+      const duracion = tabla.rows[i].children[1].innerText;
 
-      const btnDelete = tabla.rows[i].children[5].children[2];
-      const btnEdit = tabla.rows[i].children[5].children[1];
+      const btnDelete = tabla.rows[i].children[4].children[1];
+      const btnEdit = tabla.rows[i].children[4].children[0];
 
       btnDelete.onclick = () => {
-        modalDelete.setAttribute('href', `/home/addmusic/delete/${id}`);
+        modalDelete.setAttribute('href', `/home/addmusic/music/delete/${id}`);
       }
 
       btnEdit.onclick = () => {
-        titulom.value = titulo;
-        const d = fecha.split('/');
-        fecham.value = `${d[2]}-${d[1]}-${d[0]}`;
-        generom.value = genero;
-        preciom.value = precio.slice(2);
-        form.setAttribute('action', `/home/addmusic/edit/${id}`);
+        nombrem.value = titulo;
+        duracionm.value = duracion;
+        form.setAttribute('action', `/home/addmusic/music/edit/${id}`);
       }
     }
   });

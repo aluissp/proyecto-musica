@@ -4,6 +4,8 @@ const morgan = require('morgan');
 const app = express();
 const bodyParser = require('body-parser');
 const exphbs = require('express-handlebars');
+const flash = require('connect-flash');
+const session = require('express-session');``
 
 // Ajustes
 const hbs = exphbs.create({
@@ -22,6 +24,7 @@ app.set('view engine', '.hbs');
 
 // Middlewars
 // Son funciones que se ejecutan antes de que vengan las peticiones del usuario (rutas del servidor)
+app.use(flash());
 app.use(morgan('dev'));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
@@ -30,6 +33,7 @@ app.use(express.json());
 
 // Global variables
 app.use((req, res, next) => {
+    // app.locals = req.flash();
     next();
 });
 
@@ -37,6 +41,7 @@ app.use((req, res, next) => {
 const indexRoute = require('./routes/index').router;
 const linksRoute = require('./routes/links').router;
 const authRoute = require('./routes/autenticacion').router;
+const req = require('express/lib/request');
 
 // Usando rutas
 app.use('/', indexRoute);
