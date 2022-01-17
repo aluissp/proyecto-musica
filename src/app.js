@@ -2,17 +2,20 @@ const express = require('express'); // Importamos la libreria
 const path = require('path');
 const morgan = require('morgan');
 const app = express();
-const bodyParser = require('body-parser');
 const exphbs = require('express-handlebars');
 const flash = require('connect-flash');
-const session = require('express-session');``
+const session = require('express-session');
+const PgStore = require('connect-pg-simple')(session);
+const { db } = require('./conexion');
+const passport = require('passport');
+
+require('./lib/passport');
 
 // Ajustes
 const hbs = exphbs.create({
     defaultLayaout: 'main',
     layaoutsDir: path.join(app.get('views'), 'layaouts'),
     layaoutsDir: path.join(app.get('views'), 'partials'),
-    // layaoutsDir: path.join(app.get('views'), 'links'),
     extname: '.hbs',
     helpers: require('./lib/handlebars')
 });
@@ -23,17 +26,27 @@ app.engine('.hbs', hbs.engine);
 app.set('view engine', '.hbs');
 
 // Middlewars
-// Son funciones que se ejecutan antes de que vengan las peticiones del usuario (rutas del servidor)
+// Crear sessiones de los usuarios
+app.use(session({
+    secret: 'luisnodesession',
+    resave: false,
+    saveUninitialized: false,
+    store: new PgStore({
+        pool: db
+    })
+}));
 app.use(flash());
 app.use(morgan('dev'));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
+app.use(passport.initialize());
+app.use(passport.session());
 // app.use(bodyParser.urlencoded({ extended: true }));
 // app.use(bodyParser.json());
 
 // Global variables
 app.use((req, res, next) => {
-    // app.locals = req.flash();
+    app.locals.success_album = req.flash('success_album');
     next();
 });
 
@@ -41,7 +54,6 @@ app.use((req, res, next) => {
 const indexRoute = require('./routes/index').router;
 const linksRoute = require('./routes/links').router;
 const authRoute = require('./routes/autenticacion').router;
-const req = require('express/lib/request');
 
 // Usando rutas
 app.use('/', indexRoute);

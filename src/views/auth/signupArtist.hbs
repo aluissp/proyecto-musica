@@ -1,0 +1,64 @@
+
+{{> navigation }}
+
+<section class="signup-section container p-5">
+	<div class="row justify-content-center">
+		<div class="col-10">
+			<div class="card d-md-flex border-primary">
+				<div class="card-header p-4 d-flex align-items-start">
+					<h2 class="mb-4">Bienvenido a Epicentro Arte</h2>
+				</div>
+				<div class="card-body px-5 pt-5">
+					<h3 class="mb-4 d-flex justify-content-center">Crea una cuenta para artista ahora!</h3>
+
+					<form action="/signup/artist" method="POST" class="d-flex">
+						<div class="col-12">
+							<div class="row d-flex align-items-center justify-content-between">
+								<label class="label">Ingresa el nombre de artista</label>
+								<input type="text" name="artista" class="form-control col-7" autofocus>
+							</div>
+
+							<div class="row d-flex align-items-center justify-content-between my-2">
+								<label class="label">Direccion de correo</label>
+								<input type="email" name='email' class="form-control col-7"
+									placeholder="ejemplo@mail.com">
+							</div>
+							<div class="row d-flex align-items-center justify-content-between">
+								<label class="label" for="password">Contraseña</label>
+								<input type="password" name="password" class="form-control col-7"
+									placeholder="Ingrese una contraseña segura">
+							</div>
+
+							<div class="row d-flex align-items-center justify-content-between my-2">
+								<label class="label">Ingresa tu pais</label>
+								<input type="text" name="pais" class="form-control col-7" placeholder="Ecuador" autofocus>
+							</div>
+							<div class="row justify-content-end">
+								<button type=" submit" class="btn btn-info submit p-3">Crear cuenta</button>
+							</div>
+						</div>
+					</form>
+
+				</div>
+
+				{{!-- <div class="w-100 text-center">
+					<p class="mb-3 text-center">Signup with this services</p>
+					<p class="social-media d-flex justify-content-center">
+						<a href="#"
+							class="social-icon google d-flex align-items-center justify-content-center m-2"><span
+								class="fa fa-google"></span></a>
+						<a href="#"
+							class="social-icon facebook d-flex align-items-center justify-content-center m-2"><span
+								class="fa fa-facebook"></span></a>
+						<a href="#"
+							class="social-icon twitter d-flex align-items-center justify-content-center m-2"><span
+								class="fa fa-twitter"></span></a>
+					</p>
+				</div> --}}
+				<div class="w-100 text-center p-2">
+					<p class="mb-4">Ya tengo una cuenta! <a href="#signin">Iniciar sesion</a></p>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>

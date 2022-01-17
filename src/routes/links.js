@@ -9,7 +9,8 @@ router.route('/addmusic')
 
         const consulta = await db.query("select * from albumes where id_art= $1", ['art-8']);
         const albumes = consulta.rows;
-        res.render('links/addAlbum', { albumes });
+        const logo = 'img/epicentro-bar.jpg'
+        res.render('links/addAlbum', { albumes, logo });
     });
 
 router.route('/addmusic/album')
@@ -24,11 +25,11 @@ router.route('/addmusic/album')
             fecha
         ]
 
-
         await db.query(`INSERT INTO 
         albumes(id_art, nombre_alb, genero_alb, precio_alb, fecha_al)
         VALUES($1, $2, $3, $4, $5)`, nuevoAlbum);
 
+        // req.flash('success_album','Album guardado correctamente');
         res.redirect('/home/addmusic');
     });
 

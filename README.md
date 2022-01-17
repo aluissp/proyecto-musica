@@ -9,3 +9,6 @@ Dependencias usadas
  - nodemon
  - body-parser
  - animate.css 
+ - connect-pg-simple
+ - passport
+ - passport-local
