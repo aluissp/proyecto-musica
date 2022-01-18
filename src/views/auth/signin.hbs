@@ -1,25 +1,21 @@
-{{> navigation }}
-
 <div class="container p-5">
     <div class="row justify-content-center">
         <div class="col-10">
             <div class="card border-primary d-flex align-items-end">
-                <div class="p-4">
-                    <img src="img/logo-epicentroarte.png" class="img-fluid" />
-                </div>
-                <div class="align-self-center">
+                {{!-- <div class="p-4 text-center">
+                    <img src="img/logo-epicentroarte.png" width="100" class="img-fluid rounded mr-4"
+                        alt='Logo epicentro' />
+                </div> --}}
+                <div class="align-self-center pt-5">
 
                     <h1 class="mb-4">Bienvenido de vuelta</h1>
 
-                    <!-- Alerta -->
-                    <div class="alert alert-danger d-none" role="alert" id="alert">
-                        A simple danger alert—check it out!
-                    </div>
+                    {{> message}}
 
-                    <form class="mb-5">
+                    <form class="mb-5" action="/signinArtist" method="POST">
                         <div class="mb-4">
                             <label class="form-label ">Email</label>
-                            <input type="email" class="form-control" placeholder="Ingresa tu email">
+                            <input type="email" name="email" class="form-control" placeholder="Ingresa tu email">
                         </div>
                         <div class="mb-4">
                             <label class="form-label">Contraseña</label>

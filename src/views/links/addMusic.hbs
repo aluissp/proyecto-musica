@@ -1,106 +1,94 @@
-
-{{> navigation }}
-
 <!-- Modal -->
 
-  <div
-    class="modal fade"
-    id="modal"
-    tabindex="-1"
-    role="dialog"
-    aria-labelledby="exampleModalCenterTitle"
-    aria-hidden="true"
-  >
-    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">
-            Editar album 
-          </h5>
-          <button
-            type="button"
-            class="close"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          >
-            <span aria-hidden="true">&times;</span>
-          </button>
+<div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+  aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          Editar album
+        </h5>
+        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-danger d-none" role="alert" id="modal-alert">
+          A simple danger alert—check it out!
         </div>
-        <div class="modal-body">
-          <div class="alert alert-danger d-none" role="alert" id="modal-alert">
-            A simple danger alert—check it out!
-          </div>
-          <form id="form-edit" method="POST">
-            <div class="row">
-                <div class="col-7  d-flex align-items-center">
-                  <label class="m-0">Nombre</label>
-                  <input type="text" id="nombre-m" name='nombre' class="form-control ml-2" placeholder="Ingrese el nombre de la cancion" required>
-                </div>
-                <div class="col-5 d-flex align-items-center justify-content-between">
-                    <label class="m-0">Duracion</label>
-                  <div class="col-12">
-                    <input type="time" id="duracion-m" name="duracion" class="form-control col-9" value="00:00:00" step="1" required>
-                  </div>
-
-                </div>
+        <form id="form-edit" method="POST">
+          <div class="row">
+            <div class="col-7  d-flex align-items-center">
+              <label class="m-0">Nombre</label>
+              <input type="text" id="nombre-m" name='nombre' class="form-control ml-2"
+                placeholder="Ingrese el nombre de la cancion" required>
             </div>
+            <div class="col-5 d-flex align-items-center justify-content-between">
+              <label class="m-0">Duracion</label>
+              <div class="col-12">
+                <input type="time" id="duracion-m" name="duracion" class="form-control col-9" value="00:00:00" step="1"
+                  required>
+              </div>
+
+            </div>
+          </div>
           <div class="modal-footer m-2">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
               Cerrar
             </button>
             <button type="submit" class="btn btn-info" id="modal-btn">
-             Guardar
+              Guardar
             </button>
           </div>
         </form>
-        </div>
       </div>
     </div>
   </div>
+</div>
 
-  <main>
-    <div class="container pt-3">
-      <div class="alert alert-danger d-none" role="alert" id="alert">
-        A simple danger alert—check it out!
-      </div>
+<main>
+  <div class="container pt-3">
+    <div class="alert alert-danger d-none" role="alert" id="alert">
+      A simple danger alert—check it out!
+    </div>
 
-      <!-- Agregar cancion -->
+    <!-- Agregar cancion -->
 
-{{!--     Tabla «public.canciones»
-    Columna    |          Tipo          | Ordenamiento | Nulable  | Por omisión
- --------------+------------------------+--------------+----------+-------------
-  id_can       | character varying(10)  |              | not null |
-  id_alb       | character varying(10)  |              |          |
-  nombre_can   | character varying(50)  |              | not null |
-  duracion_can | time without time zone |              | not null |
-  nropista_can | smallint               |              | not null |--}}
+    {{!-- Tabla «public.canciones»
+    Columna | Tipo | Ordenamiento | Nulable | Por omisión
+    --------------+------------------------+--------------+----------+-------------
+    id_can | character varying(10) | | not null |
+    id_alb | character varying(10) | | |
+    nombre_can | character varying(50) | | not null |
+    duracion_can | time without time zone | | not null |
+    nropista_can | smallint | | not null |--}}
 
-      <div>
-        <form action="/home/addmusic/music/{{idAlbum}}" method="POST" class="d-flex">
-          <div class="col-10">
-            <div class="row">
-                <div class="col-7 d-flex align-items-center">
-                  <label class="m-0">Nombre</label>
-                  <input type="text" id="nombre" name='nombre' class="form-control ml-2" placeholder="Ingrese el nombre de la cancion" required>
-                </div>
-                <div class="col-5 d-flex align-items-center justify-content-between">
-                  <label class="m-0">Duracion</label>
-                  <input type="time" name="duracion" class="form-control col-9" value="00:00:00" step="1" required>
-                </div>
+    <div>
+      <form action="/home/addmusic/music/{{idAlbum}}" method="POST" class="d-flex">
+        <div class="col-10">
+          <div class="row">
+            <div class="col-7 d-flex align-items-center">
+              <label class="m-0">Nombre</label>
+              <input type="text" id="nombre" name='nombre' class="form-control ml-2"
+                placeholder="Ingrese el nombre de la cancion" required>
             </div>
-
+            <div class="col-5 d-flex align-items-center justify-content-between">
+              <label class="m-0">Duracion</label>
+              <input type="time" name="duracion" class="form-control col-9" value="00:00:00" step="1" required>
+            </div>
           </div>
 
-          <div class="col-2 d-flex align-items-center">
-              <button type="submit" class="btn btn-info btn-block" id="add">
-                  Agregar
-                </button>
-          </div>
-        </form>
-      </div>
+        </div>
+
+        <div class="col-2 d-flex align-items-center">
+          <button type="submit" class="btn btn-info btn-block" id="add">
+            Agregar
+          </button>
+        </div>
+      </form>
+    </div>
 
     {{> listMusic }}
 
-    </div>
-  </main>
-
+  </div>
+</main>

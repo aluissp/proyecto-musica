@@ -1,60 +1,21 @@
-/* Ninguna de las imagenes son de mi propiedad, a continuación están los links de los autores
-
-
-*/
-
-:root {
-    --dark: #16191C;
-    --dark-x: #1E2126;
-    --light: #ffffff;
+.index {
+    width: 100%;
+    height: 90vh;
 }
 
-body {
-    font-family: 'Spartan', sans-serif;
-    font-weight: 300;
-    color: var(--light);
-}
-
-.text-light {
-    color: var(--light) !important;
-}
-
-.bg-dark {
-    background-color: var(--dark) !important;
-}
-
-.bg-dark-x {
-    background-color: var(--dark-x);
-}
-
-.btn {
-    min-height: 3.125rem;
-    font-weight: 600;
-}
-
-.form-control {
-    min-height: 3.125rem;
-    line-height: initial;
-}
-
-.form-control:focus {
-    background-color: var(--dark-x);
-    outline: none;
-}
-
-.img-1 {
-    background-image: url('img-1.jpg');
+.masthead {
+    min-height: 30rem;
+    width: 100%;
+    height: 90vh;
+    padding-top: 8rem;
+    background: url('/img/bg.jpg');
+    background-position: center center;
+    background-repeat: no-repeat;
     background-size: cover;
-    background-position: center;
 }
 
-.img-2 {
-    background-image: url('img-2.jpg');
-    background-size: cover;
-    background-position: center;
-}
-
-.img-fluid {
-    width: 100px;
-    border-radius: 4px;
+.masthead h1 {
+    font-size: 4rem;
+    margin: 0;
+    padding: 0;
 }

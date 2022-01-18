@@ -1,13 +1,14 @@
 const express = require('express'); // Importamos la libreria
 const router = express.Router();
 const { db } = require('../conexion');
+const { isLoggedIn } = require('../lib/auth');
 
 // RUTAS SOLO DE ARTISTAS
 // CRUD ALBUM
 router.route('/addmusic')
     .get(async (req, res) => {
 
-        const consulta = await db.query("select * from albumes where id_art= $1", ['art-8']);
+        const consulta = await db.query("select * from albumes where id_art= $1", [req.user.id_art]);
         const albumes = consulta.rows;
         const logo = 'img/epicentro-bar.jpg'
         res.render('links/addAlbum', { albumes, logo });
@@ -18,7 +19,7 @@ router.route('/addmusic/album')
         const { titulo, fecha, npistas, genero, precio } = req.body;
         const precio_n = Number(precio);
         const nuevoAlbum = [
-            'art-8',
+            req.user.id_art,
             titulo,
             genero,
             precio_n,
@@ -26,7 +27,7 @@ router.route('/addmusic/album')
         ]
 
         await db.query(`INSERT INTO 
-        albumes(id_art, nombre_alb, genero_alb, precio_alb, fecha_al)
+        albumes(id_art, nombre_alb, genero_alb, precio_alb, fecha_alb)
         VALUES($1, $2, $3, $4, $5)`, nuevoAlbum);
 
         // req.flash('success_album','Album guardado correctamente');
@@ -52,7 +53,7 @@ router.route('/addmusic/edit/:idAlbum')
             precio_n,
             idAlbum
         ]
-        await db.query('update albumes set nombre_alb = $1, fecha_al = $2, genero_alb = $3, precio_alb = $4 where id_alb = $5', editAlbum);
+        await db.query('update albumes set nombre_alb = $1, fecha_alb = $2, genero_alb = $3, precio_alb = $4 where id_alb = $5', editAlbum);
 
         res.redirect('/home/addmusic');
     });

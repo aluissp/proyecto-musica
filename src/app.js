@@ -47,6 +47,10 @@ app.use(passport.session());
 // Global variables
 app.use((req, res, next) => {
     app.locals.success_album = req.flash('success_album');
+    app.locals.message = req.flash('message');
+    // console.log('estoy en global');
+    // console.log(req.user);
+    app.locals.user = req.user;
     next();
 });
 
