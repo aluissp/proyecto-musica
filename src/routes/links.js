@@ -10,8 +10,7 @@ router.route('/addmusic')
 
         const consulta = await db.query("select * from albumes where id_art= $1", [req.user.id_art]);
         const albumes = consulta.rows;
-        const logo = 'img/epicentro-bar.jpg'
-        res.render('links/addAlbum', { albumes, logo });
+        res.render('links/addAlbum', { albumes });
     });
 
 router.route('/addmusic/album')

@@ -12,16 +12,16 @@ const passport = require('passport');
 require('./lib/passport');
 
 // Ajustes
+app.set('views', path.join(__dirname, './views'));
 const hbs = exphbs.create({
-    defaultLayaout: 'main',
-    layaoutsDir: path.join(app.get('views'), 'layaouts'),
-    layaoutsDir: path.join(app.get('views'), 'partials'),
+    defaultLayout: 'main',
+    layoutsDir: path.join(app.get('views'), 'layouts'),
+    partialsDir: path.join(app.get('views'), 'partials'),
     extname: '.hbs',
     helpers: require('./lib/handlebars')
 });
 
 app.set('port', process.env.PORT || '3000');
-app.set('views', path.join(__dirname, './views'));
 app.engine('.hbs', hbs.engine);
 app.set('view engine', '.hbs');
 
@@ -58,11 +58,13 @@ app.use((req, res, next) => {
 const indexRoute = require('./routes/index').router;
 const linksRoute = require('./routes/links').router;
 const authRoute = require('./routes/autenticacion').router;
+const profileRoute = require('./routes/profile').router;
 
 // Usando rutas
 app.use('/', indexRoute);
 app.use('/', authRoute);
 app.use('/home', linksRoute);
+app.use('/profile', profileRoute);
 
 // archivos
 app.use(express.static(path.join(__dirname, 'public')));
