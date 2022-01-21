@@ -2,32 +2,41 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const { db } = require('../conexion');
 
-passport.use('local.signinArtist', new LocalStrategy({
+passport.use('local.signin', new LocalStrategy({
     usernameField: 'email',
     passwordField: 'password',
     passReqToCallback: true
-}, async (req, artistmail, password, done) => {
+}, async (req, mail, password, done) => {
 
-    const consulta = await db.query('SELECT * FROM artistas WHERE email_art = $1', [artistmail]);
-    const rows = consulta.rows;
-    if (rows.length > 0) {
-        const art = rows[0];
+    const consultaArt = await db.query('SELECT * FROM artistas WHERE email_art = $1', [mail]);
+    const consultaUs = await db.query('SELECT * FROM usuarios WHERE email_usu = $1', [mail]);
+    const rowsArt = consultaArt.rows;
+    const rowsUs = consultaUs.rows;
+    // Artistas
+    if (rowsArt.length > 0) {
+        const art = rowsArt[0];
         if (art.contrasena_art === password) {
-            // const art_id = []
             art.id = art.id_art;
-            art.seudonimo = art.seudonimo_art;
-            art.email = art.email_art;
             done(null, art, req.flash('success', 'Bienvenido' + art.seudonimo_art));
         } else {
             done(null, false, req.flash('message', 'Contraseña invalida'));
         }
+    } else if (rowsUs.length > 0) {
+        const us = rowsUs[0];
+        if (us.contrasena_usu === password) {
+            us.id = us.id_usu;
+            done(null, us, req.flash('success', 'Bienvenido ' + us.nombre_usu));
+        } else {
+            done(null, false, req.flash('message', 'Contraseña invalida'));
+        }
+
     } else {
-        done(null, false, req.flash('message', 'El artista no existe'));
+        done(null, false, req.flash('message', 'El usuario o artista no existe'));
     }
 
 }));
 
-// Artistas
+// Artistas singup
 passport.use('local.signupArtist', new LocalStrategy({
     usernameField: 'email',
     passwordField: 'password',
@@ -41,16 +50,47 @@ passport.use('local.signupArtist', new LocalStrategy({
         password,
         pais
     ]
+    try {
+        await db.query(`INSERT INTO
+        artistas(seudonimo_art, email_art, contrasena_art, pais_art)
+        VALUES ($1, $2, $3, $4)`, newArtist);
 
-    await db.query(`INSERT INTO
-    artistas(seudonimo_art, email_art, contrasena_art, pais_art)
-    VALUES ($1, $2, $3, $4)`, newArtist);
+        const resultado = await db.query(`SELECT id_art FROM artistas WHERE email_art = $1`, [artistmail]);
+        newArtist.id = resultado.rows[0].id_art;
+        return done(null, newArtist);
+    } catch (e) {
+        console.log(e);
+        return done(null, null);
+    }
+}));
+// Usuarios singup
+passport.use('local.signupUser', new LocalStrategy({
+    usernameField: 'email',
+    passwordField: 'password',
+    passReqToCallback: true
+}, async (req, usermail, password, done) => {
+    const { nombre, apellido, date, genero } = req.body;
 
-    const resultado = await db.query(`SELECT id_art FROM artistas WHERE email_art = $1`, [artistmail]);
-    newArtist.id = resultado.rows[0].id_art;
-    newArtist.seudonimo = artista;
-    newArtist.email = artistmail;
-    return done(null, newArtist);
+    const newUser = [
+        nombre,
+        apellido,
+        usermail,
+        password,
+        date,
+        genero
+    ]
+    try {
+        await db.query(`INSERT INTO
+        usuarios(id_usu, nombre_usu, apellido_usu, email_usu, contrasena_usu, fnacimiento_usu, genero_usu)
+        VALUES ('usu-2',$1, $2, $3, $4, $5, $6)`, newUser);
+
+        const resultado = await db.query(`SELECT id_usu FROM usuarios WHERE email_usu = $1`, [usermail]);
+        newUser.id = resultado.rows[0].id_usu;
+        return done(null, newUser);
+    } catch (e) {
+        console.log(e);
+        return done(null, null);
+    }
 }));
 
 passport.serializeUser((user, done) => {
@@ -58,6 +98,18 @@ passport.serializeUser((user, done) => {
 });
 
 passport.deserializeUser(async (id, done) => {
-    const consulta = await db.query('SELECT * FROM artistas WHERE id_art = $1', [id]);
-    done(null, consulta.rows[0]);
+    const consultaArt = await db.query('SELECT * FROM artistas WHERE id_art = $1', [id]);
+    const consultaUs = await db.query('SELECT * FROM usuarios WHERE id_usu = $1', [id]);
+    const rowsArt = consultaArt.rows;
+    const rowsUs = consultaUs.rows;
+
+    if (rowsArt.length > 0) {
+        rowsArt[0].isArt = true;
+        // console.log(rowsArt);
+        done(null, rowsArt[0]);
+    } else if (rowsUs.length > 0) {
+        rowsUs[0].isUsu = true;
+        // console.log(rowsUs);
+        done(null, rowsUs[0]);
+    }
 });

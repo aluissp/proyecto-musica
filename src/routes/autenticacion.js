@@ -9,12 +9,12 @@ router.route('/signup/artist')
         res.render('auth/signupArtist');
     })
     .post(passport.authenticate('local.signupArtist', {
-        successRedirect: '/home/artist',
+        successRedirect: '/home',
         failureRedirect: '/signup/artist',
         failureFlash: true
     }));
 
-router.route('/home/artist')
+router.route('/home')
     .get(isLoggedIn, (req, res) => {
         res.render('home');
     });
@@ -22,18 +22,18 @@ router.route('/home/artist')
 router.route('/logout')
     .get((req, res) => {
         req.logOut();
-        res.redirect('/signinArtist');
+        res.redirect('/signin');
     });
 
-// Ingreso
-router.route('/signinArtist')
+// Ingreso Dual
+router.route('/signin')
     .get((req, res) => {
         res.render('auth/signin');
     })
     .post((req, res, next) => {
-        passport.authenticate('local.signinArtist', {
-            successRedirect: '/home/artist',
-            failureRedirect: '/signinArtist',
+        passport.authenticate('local.signin', {
+            successRedirect: '/home',
+            failureRedirect: '/signin',
             failureFlash: true
         })(req, res, next);
     });
@@ -45,8 +45,10 @@ router.route('/signup')
     .get((req, res) => { // Para renderizar la vista
         res.render('auth/signup');
     })
-    .post((req, res) => { // Para obtener los datos de la vista
-        res.send('recibido');
-    });
+    .post(passport.authenticate('local.signupUser', {
+        successRedirect: '/home',
+        failureRedirect: '/signup',
+        failureFlash: true
+    }));
 
 exports.router = router;
