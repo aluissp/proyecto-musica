@@ -1,11 +1,11 @@
 const express = require('express'); // Importamos la libreria
 const router = express.Router();
 const passport = require('passport');
-const { isLoggedIn } = require('../lib/auth');
+const { isLoggedIn, isNotLoggedIn } = require('../lib/auth');
 // ARTISTAS
 // Autenticacion
 router.route('/signup/artist')
-    .get((req, res) => {
+    .get(isNotLoggedIn, (req, res) => {
         res.render('auth/signupArtist');
     })
     .post(passport.authenticate('local.signupArtist', {
@@ -20,14 +20,14 @@ router.route('/home')
     });
 
 router.route('/logout')
-    .get((req, res) => {
+    .get(isLoggedIn, (req, res) => {
         req.logOut();
         res.redirect('/signin');
     });
 
 // Ingreso Dual
 router.route('/signin')
-    .get((req, res) => {
+    .get(isNotLoggedIn, (req, res) => {
         res.render('auth/signin');
     })
     .post((req, res, next) => {
@@ -38,11 +38,10 @@ router.route('/signin')
         })(req, res, next);
     });
 
-
 // USUARIOS
 // Autenticacion
 router.route('/signup')
-    .get((req, res) => { // Para renderizar la vista
+    .get(isNotLoggedIn, (req, res) => { // Para renderizar la vista
         res.render('auth/signup');
     })
     .post(passport.authenticate('local.signupUser', {

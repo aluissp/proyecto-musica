@@ -1,8 +1,9 @@
 const express = require('express'); // Importamos la libreria
 const router = express.Router();
+const { isNotLoggedIn } = require('../lib/auth');
 
 router.route('/')
-    .get((req, res) => {
+    .get(isNotLoggedIn, (req, res) => {
         res.render('index');
     })
 

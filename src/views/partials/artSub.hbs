@@ -1,140 +1,176 @@
-<div class="modal fade" tabindex="-1" id="cambiartarjeta">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Elija una tarjeta</h5>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <table class="table table-striped" id="table">
 
-                    <tbody>
-                        <tr id="">
-                            <td>
-                                Tarjeta de crédito
-                            </td>
-                            <td>
-                                1000111122224444
-                            </td>
-                            <td>
-                                Expira el 2022-06-23
-                            </td>
-                            <td class="text-center">
-                                <button class="btn btn-primary mb-1 ml-3" data-bs-toggle="modal"
-                                    data-bs-target="#modal">
-                                    Elegir
-                                    <i class="ml-2 	fas fa-wallet"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cerar</button>
+{{#if insus}}
+<div  id="sub-view">
+{{else}}
+<div class="d-none" id="sub-view">
+{{/if}}
+
+    <div class="modal fade" tabindex="-1" id="cambiartarjeta">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Elija una tarjeta</h5>
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-striped" id="table">
+
+                        <tbody>
+                            {{#each tarjetas}}
+                            <tr id="">
+                                <td>
+                                    {{tipo_tar}}
+                                </td>
+                                <td>
+                                    {{numero_tar}}
+                                </td>
+                                <td>
+                                    Expira el {{dateFormat fcaducidad}}
+                                </td>
+                                <td class="text-center">
+                                    <button class="btn btn-primary mb-1 ml-3" data-bs-toggle="modal"
+                                        data-bs-target="#cambiartarjeta">
+                                        Elegir
+                                        <i class="ml-2 	fas fa-wallet"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cerar</button>
+                </div>
             </div>
         </div>
     </div>
+
+
+    <div class="container">
+        <h3> Suscripcion</h3>
+        <div class="row px-3">
+            <h4 class="col-12 p-0">Su tarjeta</h4>
+
+            {{#if tarjetas}}
+            <table class="table table-striped" id="table">
+
+                <tbody>
+                    <tr id="">
+                        <td>
+                            {{tarjetas.[0].tipo_tar}}
+                        </td>
+                        <td>
+                            {{tarjetas.[0].numero_tar}}
+                        </td>
+                        <td>
+                            Expira el {{dateFormat tarjetas.[0].fcaducidad}}
+                        </td>
+                        <td class="text-center">
+                            <button class="btn btn-primary mb-1 ml-3" data-bs-toggle="modal"
+                                data-bs-target="#cambiartarjeta">
+                                Cambiar
+                                <i class="ml-2 	fas fa-wallet"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            {{else}}
+            <h6 class="col-7 pt-2 px-0 text-warning">No tienes registrado ninguna tarjeta</h6>
+            <button id="btn-registrar-tarjeta" type="button" class="btn btn-outline-info col-5">Quiero registrar una
+                tarjeta ahora!</button>
+
+            {{/if}}
+        </div>
+        <div class="row px-3">
+            <h4 class="col-12 p-0">Plan actual</h4>
+            {{#if planActual}}
+            <table class="table table-striped" id="table">
+                <thead>
+                    <tr>
+                        <th scope="col">Plan</th>
+                        <th scope="col">Descripcion</th>
+                        <th scope="col">Precio</th>
+                        <th scope="col">Duracion</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr id="">
+                        <td>
+                            {{planActual.nombre_pl}}
+                        </td>
+                        <td>
+                            {{planActual.descripcion_pl}}
+                        </td>
+                        <td>
+                            {{coinFormat planActual.precio_pl}}
+                        </td>
+                        <td>
+                            {{planActual.duracion_pl}} días
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            {{else}}
+            <h6 class="col-12 pt-2 px-0 text-warning">No cuentas con ningun plan actualmente</h6>
+            {{#unless tarjetas}}
+            <h6 class="col-12 px-0 text-warning">Por favor registra una tarjeta para adquirir un plan</h6>
+            {{else}}
+            <h6>elige uno plan</h6>
+            {{/unless}}
+
+            {{/if}}
+        </div>
+        <div class="row px-3">
+            <h4 class="col-12 p-0">Facturacion</h4>
+            <table class="table table-striped" id="table">
+                <thead>
+                    <tr>
+                        <th scope="col">Orden #: Plan</th>
+                        <th scope="col">Comenzo a las</th>
+                        <th scope="col">Termina en</th>
+                        <th scope="col">Subtotal</th>
+                        <th scope="col">Iva</th>
+                        <th scope="col">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each suscripciones}}
+                    <tr>
+                        <td>
+                            {{id_sus}} : {{plan}}
+                        </td>
+                        <td>
+                            {{dateFormat finico_sus}}
+                        </td>
+                        <td>
+                            {{dateFormat ffin_sus}}
+                        </td>
+                        <td>
+                            {{coinFormat subtotal_sus}}
+                        </td>
+                        <td>
+                            {{coinFormat iva_sus}}
+                        </td>
+                        <td>
+                            {{coinFormat total_sus}}
+                        </td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
 </div>
 
 
-<div class="container">
-    <h3> Suscripcion</h3>
-    <div class="row px-3">
-        <h4 class="col-12 p-0">Su tarjeta</h4>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
 
-        <table class="table table-striped" id="table">
+    });
 
-            <tbody>
-                <tr id="">
-                    <td>
-                        Tarjeta de crédito
-                    </td>
-                    <td>
-                        1000111122224444
-                    </td>
-                    <td>
-                        Expira el 2022-06-23
-                    </td>
-                    <td class="text-center">
-                        <button class="btn btn-primary mb-1 ml-3" data-bs-toggle="modal"
-                            data-bs-target="#cambiartarjeta">
-                            Cambiar
-                            <i class="ml-2 	fas fa-wallet"></i>
-                        </button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-
-    </div>
-    <div class="row px-3">
-        <h4 class="col-12 p-0">Plan actual</h4>
-        <table class="table table-striped" id="table">
-            <thead>
-                <tr>
-                    <th scope="col">Plan</th>
-                    <th scope="col">Descripcion</th>
-                    <th scope="col">Precio</th>
-                    <th scope="col">Duracion</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr id="">
-                    <td>
-                        Plan Platino
-                    </td>
-                    <td>
-                        Plan de 1 año en la página
-                    </td>
-                    <td>
-                        $ 74.99
-                    </td>
-                    <td>
-                        365
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-    <div class="row px-3">
-        <h4 class="col-12 p-0">Facturacion</h4>
-        <table class="table table-striped" id="table">
-            <thead>
-                <tr>
-                    <th scope="col">Orden #: Plan</th>
-                    <th scope="col">Comenzo a las</th>
-                    <th scope="col">Termina en</th>
-                    <th scope="col">Subtotal</th>
-                    <th scope="col">Iva</th>
-                    <th scope="col">Total</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr id="">
-                    <td>
-                        sus-1 : Plan Platino
-                    </td>
-                    <td>
-                        2022-01-17
-                    </td>
-                    <td>
-                        2023-01-17
-                    </td>
-                    <td>
-                        74.99
-                    </td>
-                    <td>
-                        8.9988
-                    </td>
-                    <td>
-                        83.9888
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
-</div>
+</script>

@@ -6,14 +6,74 @@
     <div class="row my-4 justify-content-between">
         <div class="col-4 ">
             <div class="list-group card border-success">
-                <a href="#" class="list-group-item list-group-item-action ">Perfil</a>
-                <a href="#" class="list-group-item list-group-item-action ">Contraseña</a>
-                <a href="#" class="list-group-item list-group-item-action ">Suscripcion</a>
-                <a href="#" class="list-group-item list-group-item-action ">Tarjetas</a>
+                <a class="list-group-item list-group-item-action " id="art-perfil">Perfil</a>
+                <a class="list-group-item list-group-item-action " id="art-pass">Contraseña</a>
+                <a class="list-group-item list-group-item-action " id="art-sus">Suscripcion</a>
+                <a class="list-group-item list-group-item-action " id="art-tar">Tarjetas</a>
             </div>
         </div>
         <div class="col-8">
+
+            {{> artProfile }}
+
+            {{> artPass }}
+
             {{> artSub }}
+
+            {{> artTar }}
+
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const aperfil = document.getElementById('art-perfil');
+        const apass = document.getElementById('art-pass');
+        const asus = document.getElementById('art-sus');
+        const atarjeta = document.getElementById('art-tar');
+        const btnTar = document.getElementById('btn-registrar-tarjeta');
+        const btnAddCard = document.getElementById('btn-add-card');
+
+        const tarjeta = document.getElementById('tar-view');
+        const sus = document.getElementById('sub-view');
+        const pass = document.getElementById('pass-view');
+        const perfil = document.getElementById('pro-view');
+
+        aperfil.onclick = () => {
+            perfil.classList.remove('d-none');
+            pass.classList.add('d-none');
+            sus.classList.add('d-none');
+            tarjeta.classList.add('d-none');
+        }
+
+        apass.onclick = () => {
+            perfil.classList.add('d-none');
+            pass.classList.remove('d-none');
+            sus.classList.add('d-none');
+            tarjeta.classList.add('d-none');
+        }
+
+        asus.onclick = () => {
+            perfil.classList.add('d-none');
+            pass.classList.add('d-none');
+            sus.classList.remove('d-none');
+            tarjeta.classList.add('d-none');
+        }
+
+        const eventTar = () => {
+            perfil.classList.add('d-none');
+            pass.classList.add('d-none');
+            sus.classList.add('d-none');
+            tarjeta.classList.remove('d-none');
+        }
+        // Botones que necesitan mostrar tarjetas
+        atarjeta.onclick = eventTar;
+        btnTar.onclick = eventTar;
+        btnAddCard.onclick = eventTar;
+
+
+
+    });
+
+</script>
