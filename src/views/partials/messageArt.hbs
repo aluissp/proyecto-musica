@@ -1,0 +1,22 @@
+{{!-- MENSAJES DE COMPRA PLANES --}}
+{{#if buy_art_success}}
+
+<!-- Alerta -->
+<div class="alert alert-success col-12" role="alert" id="alert">
+  {{buy_art_success}}
+  <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+{{/if}}
+
+{{#if buy_art_fail}}
+
+<!-- Alerta -->
+<div class="alert alert-danger col-12" role="alert" id="alert">
+  {{buy_art_fail}}
+  <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+{{/if}}

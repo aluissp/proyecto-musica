@@ -121,10 +121,10 @@
                 <tbody>
                     {{#each tarjetas}}
                     <tr id="{{id_tar}}">
-                        <td>
+                        <td tipotaraux="{{tipo_tar}}" >
                             {{tipo_tar}}
                         </td>
-                        <td>
+                        <td nrotaraux="{{numero_tar}}">
                             {{numero_tar}}
                         </td>
                         <td dateaux="{{dateFormat fcaducidad}}">
@@ -150,40 +150,44 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const tabla = document.getElementById('table-card');
-        const modalDelete = document.getElementById('modal-delete-card');
-        const form = document.getElementById('form-edit-card');
-
-        const tarA = document.getElementById('tipoTarA');
-        const tarB = document.getElementById('tipoTarB');
-        const nroTarjeta = document.getElementById('nro-tar');
-        const fcad = document.getElementById('fcad-tar');
-
-        for (i = 0; i < tabla.rows.length; i++) {
-          // Atributos de cada row
-          const id = tabla.rows[i].getAttribute('id');
-          const tipoTarRow = tabla.rows[i].children[0].innerText;
-          const nroTarRow = tabla.rows[i].children[1].innerText;
-          const dateTarRow = tabla.rows[i].children[2].getAttribute('dateaux');
-
-          const btnEdit = tabla.rows[i].children[3].children[0];
-          const btnDelete = tabla.rows[i].children[3].children[1];
-          
-          // console.log(id, tipoTarRow, nroTarRow, dateTarRow, btnEdit, btnDelete);
-          btnDelete.onclick = () => {
-            modalDelete.setAttribute('href', `/profile/art/card/delete/${id}`);
-          }
-     
-          btnEdit.onclick = () => {
-            if (tipoTarRow === 'Tarjeta de debito') {  
-                tarA.setAttribute('checked', "");
-            } else {
-                tarB.setAttribute('checked', "");
+        if (tabla) {
+            const modalDelete = document.getElementById('modal-delete-card');
+            const form = document.getElementById('form-edit-card');
+    
+            const tarA = document.getElementById('tipoTarA');
+            const tarB = document.getElementById('tipoTarB');
+            const nroTarjeta = document.getElementById('nro-tar');
+            const fcad = document.getElementById('fcad-tar');
+    
+            for (i = 0; i < tabla.rows.length; i++) {
+              // Atributos de cada row
+              const id = tabla.rows[i].getAttribute('id');
+              const tipoTarRow = tabla.rows[i].children[0].getAttribute('tipotaraux');
+              const nroTarRow = tabla.rows[i].children[1].getAttribute('nrotaraux');
+              const dateTarRow = tabla.rows[i].children[2].getAttribute('dateaux');
+    
+              const btnEdit = tabla.rows[i].children[3].children[0];
+              const btnDelete = tabla.rows[i].children[3].children[1];
+              
+              // console.log(id, tipoTarRow, nroTarRow, dateTarRow, btnEdit, btnDelete);
+              btnDelete.onclick = () => {
+                modalDelete.setAttribute('href', `/profile/art/card/delete/${id}`);
+              }
+        
+              btnEdit.onclick = () => {
+                tarA.removeAttribute('checked');
+                tarB.removeAttribute('checked');
+                if (tipoTarRow === 'Tarjeta de debito') {  
+                    tarA.setAttribute('checked', "");
+                } else {
+                    tarB.setAttribute('checked', "");
+                }
+                const d = dateTarRow.split('/');
+                fcad.value = `${d[2]}-${d[1]}-${d[0]}`;
+                nroTarjeta.value = nroTarRow;
+                form.setAttribute('action', `/profile/art/card/edit/${id}`);
+              }
             }
-            const d = dateTarRow.split('/');
-            fcad.value = `${d[2]}-${d[1]}-${d[0]}`;
-            nroTarjeta.value = nroTarRow;
-            form.setAttribute('action', `/profile/art/card/edit/${id}`);
-          }
         }
     });
 </script>

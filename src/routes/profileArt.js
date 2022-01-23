@@ -1,7 +1,8 @@
 const express = require('express'); // Importamos la libreria
 const router = express.Router();
-const { getCardArt, getPlans, getSuscriptions, getCurrentPlan, insertCard, updateCard, deleteCard } = require('../lib/suscription');
+const { getCardArt, getPlans, getSuscriptions, getCurrentPlan, insertCard, updateCard, deleteCard, buyPlan } = require('../lib/suscription');
 
+// TARJETAS
 router.route('/art')
     .get(async (req, res) => {
         const tarjetas = await getCardArt(req.user.id_art);
@@ -48,7 +49,6 @@ router.route('/art/:view')
 router.route('/art/card')
     .post(async (req, res) => {
 
-
         const { tipotarjetas, nrotarjeta, fcaducidad } = req.body;
         const id = req.user.id_art;
         const newCard = [
@@ -94,6 +94,21 @@ router.route('/art/card/edit/:id')
             req.flash('message_card_success', 'La tarjeta se ha actualizado con exito');
         }
         res.redirect('/profile/art/4');
+    });
+
+// Suscripciones
+router.route('/art/sub/:idplan')
+    .post(async (req, res) => {
+        const idplan = req.params.idplan;
+        const idart = req.user.id_art;
+        const response = await buyPlan(idart, idplan);
+        if (response) {
+            console.log(response);
+            req.flash('buy_art_success', response);
+        } else {
+            req.flash('buy_art_fail', 'Ha ocurrido un error en la compra');
+        }
+        res.redirect('/profile/art/3');
     });
 
 exports.router = router;

@@ -84,6 +84,16 @@ const deleteCard = async (id) => {
     }
 }
 
+const buyPlan = async (idArt, idPlan) => {
+    try {
+        const hoy = new Date(Date.now());
+        await db.query('INSERT INTO suscripciones(id_art, id_pl, finico_sus) VALUES($1, $2, $3)',[idArt, idPlan, hoy]);
+        return 'Se ha comprado exitosamente su plan';
+    } catch (e) {
+        console.log(e);
+    }
+}
+
 exports.getCardArt = getCardArt;
 exports.getPlans = getPlans;
 exports.getSuscriptions = getSuscriptions;
@@ -91,3 +101,4 @@ exports.getCurrentPlan = getCurrentPlan;
 exports.insertCard = insertCard;
 exports.updateCard = updateCard;
 exports.deleteCard = deleteCard;
+exports.buyPlan = buyPlan;

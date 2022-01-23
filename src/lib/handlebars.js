@@ -19,4 +19,8 @@ helpers.coinFormat = (coin) => {
     return `$ ${coin.toFixed(2)}`;
 }
 
+helpers.firstPlan = (idPlan) => {
+    return idPlan === 'pl-1';
+}
+
 module.exports = helpers;

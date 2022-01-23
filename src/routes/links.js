@@ -1,12 +1,12 @@
 const express = require('express'); // Importamos la libreria
 const router = express.Router();
 const { db } = require('../conexion');
-const { isLoggedIn } = require('../lib/auth');
+const { whitPlan } = require('../lib/auth');
 
 // RUTAS SOLO DE ARTISTAS
 // CRUD ALBUM
 router.route('/addmusic')
-    .get(async (req, res) => {
+    .get(whitPlan, async (req, res) => {
 
         const consulta = await db.query("select * from albumes where id_art= $1", [req.user.id_art]);
         const albumes = consulta.rows;

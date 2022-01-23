@@ -5,6 +5,7 @@
 <div class="d-none" id="sub-view">
 {{/if}}
 
+    {{!-- Elegir tarjeta --}}
     <div class="modal fade" tabindex="-1" id="cambiartarjeta">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -15,23 +16,22 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <table class="table table-striped" id="table">
+                    <table class="table table-striped" id="list-cards">
 
                         <tbody>
                             {{#each tarjetas}}
-                            <tr id="">
-                                <td>
+                            <tr>
+                                <td listnametar="{{tipo_tar}}">
                                     {{tipo_tar}}
                                 </td>
-                                <td>
+                                <td listnrotar="{{numero_tar}}">
                                     {{numero_tar}}
                                 </td>
-                                <td>
+                                <td listfexp="Expira el {{dateFormat fcaducidad}}">
                                     Expira el {{dateFormat fcaducidad}}
                                 </td>
                                 <td class="text-center">
-                                    <button class="btn btn-primary mb-1 ml-3" data-bs-toggle="modal"
-                                        data-bs-target="#cambiartarjeta">
+                                    <button class="btn btn-primary mb-1 ml-3" data-bs-dismiss="modal">
                                         Elegir
                                         <i class="ml-2 	fas fa-wallet"></i>
                                     </button>
@@ -47,22 +47,59 @@
             </div>
         </div>
     </div>
-
+    {{!-- Comprar plan --}}
+    <div class="modal fade" id="modal-buy-plan" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title col-12 text-success">
+              Comprar Plan
+            </h4>
+          </div>
+          <div class="modal-body">
+                <form id="form-buy-plan" method="POST">
+                    <div class="col-12 d-flex">
+                        <h5 class="col-7 px-0">Esta seguro de comprar el</h5>
+                        <h5 class="col-4 text-info px-0" id="name-plan-buy"></h5> 
+                    </div>
+                    <div class="col-12 d-flex">
+                        <div class="col-6 pl-0">
+                            <h5 class="px-0"> Su tarjeta es : </h5>
+                            <h5 class="px-0 text-warning" id="nro-card-buy"></h5> 
+                        </div>
+                        <div class="col-6 ml-4">
+                            <h5 > El precio total es : </h5>
+                            <h5 class="text-warning" id="price-plan-buy"></h5> 
+                        </div>
+                    </div>
+                    <div class="row d-flex justify-content-end modal-footer">    
+                        <button type="button" class="btn btn-secondary mx-3 px-4" data-bs-dismiss="modal">
+                        Cerrar
+                        </button>
+                        <button type="submit" class="btn btn-outline-info ml-3 mr-5 px-4">
+                        Confirmar pago
+                        </button>
+                    </div>
+                </form>
+            </div>
+          </div>
+        </div>
+    </div>
 
     <div class="container">
         <h3> Suscripcion</h3>
         <div class="row px-3">
-            <h4 class="col-12 p-0">Su tarjeta</h4>
+            <h4 class="col-12 p-0 text-success">Su tarjeta</h4>
 
             {{#if tarjetas}}
-            <table class="table table-striped" id="table">
+            <table class="table table-striped" id="my-card">
 
                 <tbody>
-                    <tr id="">
+                    <tr>
                         <td>
                             {{tarjetas.[0].tipo_tar}}
                         </td>
-                        <td>
+                        <td carddefault="{{tarjetas.[0].numero_tar}}" id="carddefault">
                             {{tarjetas.[0].numero_tar}}
                         </td>
                         <td>
@@ -86,7 +123,9 @@
             {{/if}}
         </div>
         <div class="row px-3">
-            <h4 class="col-12 p-0">Plan actual</h4>
+            <h4 class="col-12 p-0 text-success">Plan actual</h4>
+             {{> messageArt}}
+             
             {{#if planActual}}
             <table class="table table-striped" id="table">
                 <thead>
@@ -115,17 +154,53 @@
                 </tbody>
             </table>
             {{else}}
-            <h6 class="col-12 pt-2 px-0 text-warning">No cuentas con ningun plan actualmente</h6>
             {{#unless tarjetas}}
             <h6 class="col-12 px-0 text-warning">Por favor registra una tarjeta para adquirir un plan</h6>
             {{else}}
-            <h6>elige uno plan</h6>
+            <h6 class="col-12 pt-2 px-0 text-warning">No cuentas con ningun plan actualmente, elige uno de nuestros planes que se muestran a continuacion.</h6>
+            <ul class="nav nav-tabs col-12">
+              <li class="nav-item">
+                <a class="nav-link active" data-bs-toggle="tab" href="#pl-1">Plan Básico</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#pl-2">Plan Normal</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#pl-3">Plan Gold</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#pl-4">Plan Platino</a>
+              </li>
+            </ul>
+            <div id="buy-table" class="tab-content col-12">
+                {{#each planes}}
+                {{#if (firstPlan id_pl)}}
+                <div class="tab-pane fade active show " id="{{id_pl}}">
+                {{else}}
+                <div class="tab-pane fade show " id="{{id_pl}}">
+                {{/if}}
+                    <h5 class="card-title mt-3 text-info">{{nombre_pl}}</h5>
+                    <h5 class="card-title mt-3">Descripcion</h5>
+                    <p class="card-text text-success">{{descripcion_pl}}</p>
+                    <div class="row mx-1">
+                        <h5 class="mt-2">Precio</h5>
+                        <h5 class="mt-2 ml-1 text-warning">$ {{precio_pl}}</h5>
+                        <h5 class="mt-2 ml-5">Duracion</h5>
+                        <h5 class="mt-2 ml-1">{{duracion_pl}}</h5>
+                        <h5 class="mt-2 ml-1">días</h5>
+                    </div>
+                    <div class="row d-flex justify-content-end">
+                        <button type="button" class="btn btn-outline-info mr-2" data-bs-toggle="modal" data-bs-target="#modal-buy-plan">Comprar</button>
+                    </div>
+                </div>
+                {{/each}}
+            </div>
             {{/unless}}
 
             {{/if}}
         </div>
         <div class="row px-3">
-            <h4 class="col-12 p-0">Facturacion</h4>
+            <h4 class="col-12 p-0 text-success">Facturacion</h4>
             <table class="table table-striped" id="table">
                 <thead>
                     <tr>
@@ -170,7 +245,54 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        const tlistcard = document.getElementById('list-cards');
+        const tmycard = document.getElementById('my-card');
+
+        if (tmycard) {
+
+            for (i = 0; i < tlistcard.rows.length; i++) {
+                const nameplan = tlistcard.rows[i].children[0].getAttribute('listnametar');
+                const nrotar = tlistcard.rows[i].children[1].getAttribute('listnrotar');
+                const expiracion = tlistcard.rows[i].children[2].getAttribute('listfexp');
+
+                const btnChange = tlistcard.rows[i].children[3].children[0];
+
+                btnChange.onclick = () => {
+                    tmycard.rows[0].children[0].innerText = nameplan;
+                    tmycard.rows[0].children[1].innerText = nrotar;
+                    tmycard.rows[0].children[1].setAttribute('carddefault', nrotar);
+                    tmycard.rows[0].children[2].innerText = expiracion;
+                };
+            }
+        }
+
+        const tabla = document.getElementById('buy-table');
+        if (tabla) {
+            const form = document.getElementById('form-buy-plan');
+
+            const nameplan = document.getElementById('name-plan-buy');
+            const cardbuy = document.getElementById('nro-card-buy');
+            const pricebuy = document.getElementById('price-plan-buy');
+
+            for (i = 0; i < 4; i++) {
+              // Atributos de cada row
+              const idplan = tabla.children[i].id;
+              const nameplanrow = tabla.children[i].children[0].innerText;
+              const price = tabla.children[i].children[3].children[1].innerText;
+              const btnbuy = tabla.children[i].children[4].children[0];
+
+              btnbuy.onclick = () => {
+                const carddefault = document.getElementById('carddefault').getAttribute('carddefault');
+                nameplan.innerText = nameplanrow;
+                cardbuy.innerText = carddefault;
+                var totalPrice = new Number(price.split('$')[1]);
+                totalPrice = (totalPrice * 0.12) + totalPrice;
+                totalPrice = totalPrice.toFixed(2);
+                pricebuy.innerText = `$ ${totalPrice}`;
+                form.setAttribute('action', `/profile/art/sub/${idplan}`);
+              }
+            }
+        }
 
     });
-
 </script>
