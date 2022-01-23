@@ -58,8 +58,36 @@ const insertCard = async (newCard) => {
     }
 }
 
+const updateCard = async (newCard) => {
+    try {
+        const hoy = new Date(Date.now());
+        const fcaducidad = new Date(newCard[2]);
+
+        if (!(newCard[1].length >= 16)) {
+            return 'La tarjeta debe tener 16 numeros';
+        } else if (fcaducidad < hoy) {
+            return 'La fecha de caducidad debe ser mayor a la fecha actual';
+        } else {
+            await db.query('UPDATE tarjetas_artistas SET tipo_tar = $1, numero_tar = $2, fcaducidad = $3 WHERE id_tar = $4', newCard);
+        }
+
+    } catch (e) {
+        console.log(e);
+    }
+}
+
+const deleteCard = async (id) => {
+    try {
+        await db.query('DELETE FROM tarjetas_artistas WHERE id_tar = $1', [id]);
+    } catch (e) {
+        console.log(e);
+    }
+}
+
 exports.getCardArt = getCardArt;
 exports.getPlans = getPlans;
 exports.getSuscriptions = getSuscriptions;
 exports.getCurrentPlan = getCurrentPlan;
 exports.insertCard = insertCard;
+exports.updateCard = updateCard;
+exports.deleteCard = deleteCard;

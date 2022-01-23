@@ -1,6 +1,6 @@
 const express = require('express'); // Importamos la libreria
 const router = express.Router();
-const { getCardArt, getPlans, getSuscriptions, getCurrentPlan, insertCard } = require('../lib/suscription');
+const { getCardArt, getPlans, getSuscriptions, getCurrentPlan, insertCard, updateCard, deleteCard } = require('../lib/suscription');
 
 router.route('/art')
     .get(async (req, res) => {
@@ -62,10 +62,38 @@ router.route('/art/card')
         if (response) {
             console.log(response);
             req.flash('message_card', response);
+        } else {
+            req.flash('message_card_success', 'La tarjeta se ha guardado con exito');
         }
-        req.flash('message_card_success', 'La tarjeta se ha guardado con exito');
         res.redirect('/profile/art/4');
     });
 
+router.route('/art/card/delete/:id')
+    .get(async (req, res) => {
+        const id = req.params.id;
+        await deleteCard(id);
+        req.flash('message_card', 'La tarjeta se eliminó correctamente');
+        res.redirect('/profile/art/4');
+    });
+router.route('/art/card/edit/:id')
+    .post(async (req, res) => {
+        const { tipotarjetas, nrotarjeta, fcaducidad } = req.body;
+        const id = req.params.id;
+        const newCard = [
+            tipotarjetas,
+            nrotarjeta,
+            fcaducidad,
+            id
+        ]
+
+        const response = await updateCard(newCard);
+        if (response) {
+            console.log(response);
+            req.flash('message_card', response);
+        } else {
+            req.flash('message_card_success', 'La tarjeta se ha actualizado con exito');
+        }
+        res.redirect('/profile/art/4');
+    });
 
 exports.router = router;

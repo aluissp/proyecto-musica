@@ -60,13 +60,15 @@ app.use((req, res, next) => {
 const indexRoute = require('./routes/index').router;
 const linksRoute = require('./routes/links').router;
 const authRoute = require('./routes/autenticacion').router;
-const profileRoute = require('./routes/profile').router;
+const profileArtRoute = require('./routes/profileArt').router;
+const profileUsRoute = require('./routes/profileUs').router;
 
 // Usando rutas
 app.use('/', indexRoute);
 app.use('/', authRoute);
 app.use('/home', linksRoute);
-app.use('/profile', profileRoute);
+app.use('/profile', profileArtRoute);
+app.use('/profile', profileUsRoute);
 
 // archivos
 app.use(express.static(path.join(__dirname, 'public')));
