@@ -61,7 +61,7 @@ router.route('/addmusic/edit/:idAlbum')
 router.route('/addmusic/music/:idAlbum')
     .get(async (req, res) => {
         const { idAlbum } = req.params;
-        const consulta = await db.query("select * from canciones where id_alb= $1", [idAlbum]);
+        const consulta = await db.query("select * from canciones where id_alb= $1 order by nropista_can", [idAlbum]);
         const consulta2 = await db.query("select genero_alb from albumes where id_alb= $1", [idAlbum]);
         const canciones = consulta.rows;
         const genero = consulta2.rows[0].genero_alb;
