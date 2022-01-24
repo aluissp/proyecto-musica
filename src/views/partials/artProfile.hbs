@@ -9,9 +9,68 @@
     {{/if}}
 {{/if}}
     {{!-- Aqui debe ir los modales --}}
-
-    <div class="container">
-        Perfil
+    <div class="modal fade" id="modal-edit-art" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title text-success pl-3">
+              Editar perfil
+            </h4>
+            <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body px-5">
+                <form action="/profile/art" method="POST" class="col-12 px-0">
+                    <div class="row d-flex align-items-center justify-content-between">
+				            	<h6 class="text-info">Tu seudonimo de artista</h6 >
+				      	      <input type="text"class="form-control col-7" name="artName" value="{{user.seudonimo_art}}">
+                    </div>
+				            <div class="row d-flex align-items-center justify-content-between my-2">
+				      	      <h6 class="text-info">Dirección de correo</h6 >
+				      	      <input type="email" class="form-control col-7" name="artMail" value="{{user.email_art}}">
+				            </div>
+				            <div class="row d-flex align-items-center justify-content-between my-2">
+				      	      <h6 class="text-info">Tu país</h6 >
+				      	      <input type="text" class="form-control col-7" name="artPais" value="{{user.pais_art}}">
+				            </div>
+                    <div class="row d-flex justify-content-end modal-footer px-0">    
+                        <button type="button" class="btn btn-secondary mx-3" data-bs-dismiss="modal">
+                            Cerrar
+                        </button>
+                        <button type="submit" class="btn btn-outline-info ml-3">
+                            Aceptar
+                        </button>
+                    </div>
+                </form>
+            </div>
+          </div>
+        </div>
+    </div>
+    <div class="container card border-primary pt-3 pb-3">
+    {{> messageProfile}}
+		<form class="d-flex ">
+			<div class="col-12">
+				<div class="row d-flex align-items-center justify-content-between">
+					<h5>Tu seudonimo de artista</h5 >
+					<input type="text"class="form-control col-7" value="{{user.seudonimo_art}}" disabled>
+                </div>
+				<div class="row d-flex align-items-center justify-content-between my-2">
+					<h5>Dirección de correo</h5 >
+					<input type="email" class="form-control col-7" value="{{user.email_art}}" disabled>
+				</div>
+				<div class="row d-flex align-items-center justify-content-between my-2">
+					<h5>Tu país</h5 >
+					<input type="text" class="form-control col-7" value="{{user.pais_art}}" disabled>
+				</div>
+				<div class="row justify-content-end">
+					<button type="button" class="btn btn-outline-info p-3" data-bs-toggle="modal" data-bs-target="#modal-edit-art">
+            Editar
+            <i class="fas fa-pen pl-2"></i>
+          </button>
+				</div>
+			</div>
+		</form>
     </div>
 
 </div>

@@ -1,13 +1,36 @@
 
 {{#if inpass}}
-<div  id="pass-view">
+<div id="pass-view">
 {{else}}
 <div class="d-none" id="pass-view">
 {{/if}}
     {{!-- Aqui debe ir los modales --}}
-
-    <div class="container">
-        Contraseña
+    <div class="container card border-primary pt-3 pb-3">
+        <h4 class="text-success pl-3">Cambiar contraseña</h4>
+        <!-- Alerta -->
+        {{> messagePass}}
+        <form class="d-flex pt-3" action="/profile/art/passchange" method="POST">
+            <div class="col-12">
+                <div class="row d-flex align-items-center justify-content-between">
+                    <h5 class="col-5">Tu contraseña actual</h5>
+                    <input type="text" class="form-control col-7" value="{{user.contrasena_art}}" disabled>
+                </div>
+                <div class="row d-flex align-items-center justify-content-between my-2">
+                    <p class="text-warning col-5 ">Escribe tu nueva contraseña</p>
+                    <input type="text" class="form-control col-7" name="pass1">
+                </div>
+                <div class="row d-flex align-items-center justify-content-between my-2">
+                    <p class="text-warning col-5">Confirma tu contraseña</p>
+                    <input type="text" class="form-control col-7" name="pass2">
+                </div>
+                <div class="row justify-content-end">
+                    <button type="submit" class="btn btn-outline-info p-3">
+                        Cambiar
+                        <i class="fas fa-exchange-alt pl-2"></i>
+                    </button>
+                </div>
+            </div>
+        </form>
     </div>
 
 </div>

@@ -1,6 +1,7 @@
+const { response } = require('express');
 const express = require('express'); // Importamos la libreria
 const router = express.Router();
-const { getCardArt, getPlans, getSuscriptions, getCurrentPlan, insertCard, updateCard, deleteCard, buyPlan } = require('../lib/suscription');
+const { getCardArt, getPlans, getSuscriptions, getCurrentPlan, insertCard, updateCard, deleteCard, buyPlan, changePass, changeProfile } = require('../lib/suscription');
 
 // TARJETAS
 router.route('/art')
@@ -17,6 +18,27 @@ router.route('/art')
             defaultview: true
         }
         res.render('profile/profileArt', artSubInfo);
+    }).post(async (req, res) => {
+        const { artName, artMail, artPais } = req.body;
+        const response = await changeProfile(req.user.id_art, artName, artMail, artPais);
+        if (response) {
+            req.flash('change_profile_fail', response);
+        } else {
+            req.flash('change_profile_success', 'Se actualizo correctamente su informacion');
+        }
+        res.redirect('/profile/art/1');
+    });
+
+router.route('/art/passchange')
+    .post(async (req, res) => {
+        const { pass1, pass2 } = req.body;
+        const response = await changePass(req.user.id_art, pass1, pass2);
+        if (response) {
+            req.flash('change_pass_fail', response);
+        } else {
+            req.flash('change_pass_success', 'Se actualizo correctamente la contraseña');
+        }
+        res.redirect('/profile/art/2');
     });
 
 router.route('/art/:view')

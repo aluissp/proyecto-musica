@@ -1,3 +1,5 @@
+const e = require('connect-flash');
+const { response } = require('express');
 const { db } = require('../conexion');
 
 const getCardArt = async (idArt) => {
@@ -87,10 +89,33 @@ const deleteCard = async (id) => {
 const buyPlan = async (idArt, idPlan) => {
     try {
         const hoy = new Date(Date.now());
-        await db.query('INSERT INTO suscripciones(id_art, id_pl, finico_sus) VALUES($1, $2, $3)',[idArt, idPlan, hoy]);
+        await db.query('INSERT INTO suscripciones(id_art, id_pl, finico_sus) VALUES($1, $2, $3)', [idArt, idPlan, hoy]);
         return 'Se ha comprado exitosamente su plan';
     } catch (e) {
         console.log(e);
+    }
+}
+
+const changePass = async (idArt, pass1, pass2) => {
+    try {
+        if (pass1 !== pass2) {
+            return 'Las contraseñas deben coincidir para continuar';
+        } else if (!(pass1.length >= 10 && pass2.length >= 10)) {
+            return 'La longitud de la contraseña debe ser mayor o igual a 10';
+        } else {
+            await db.query('UPDATE artistas SET contrasena_art = $1 WHERE id_art = $2', [pass1, idArt]);
+        }
+    } catch (e) {
+        console.log(e);
+    }
+}
+
+const changeProfile = async (idArt, artName, artMail, artPais) => {
+    try {
+        await db.query('UPDATE artistas SET seudonimo_art = $1, email_art =$2, pais_art = $3 WHERE id_art = $4', [artName, artMail, artPais, idArt]);
+    } catch (e) {
+        console.log(e);
+        return 'Ocurrio un error al actualizar su perfil';
     }
 }
 
@@ -102,3 +127,5 @@ exports.insertCard = insertCard;
 exports.updateCard = updateCard;
 exports.deleteCard = deleteCard;
 exports.buyPlan = buyPlan;
+exports.changePass = changePass;
+exports.changeProfile = changeProfile;

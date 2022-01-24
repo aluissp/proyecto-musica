@@ -52,6 +52,10 @@ app.use((req, res, next) => {
     app.locals.buy_art_success = req.flash('buy_art_success');
     app.locals.buy_art_fail = req.flash('buy_art_fail');
     app.locals.message = req.flash('message');
+    app.locals.change_pass_success = req.flash('change_pass_success');
+    app.locals.change_pass_fail = req.flash('change_pass_fail');
+    app.locals.change_profile_success = req.flash('change_profile_success');
+    app.locals.change_profile_fail = req.flash('change_profile_fail');
     // console.log('estoy en global');
     // console.log(req.user);
     app.locals.user = req.user;

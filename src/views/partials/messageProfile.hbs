@@ -1,0 +1,22 @@
+{{!-- MENSAJES DE CAMBIO DE PERFIL --}}
+{{#if change_profile_success}}
+
+<!-- Alerta -->
+<div class="alert alert-success col-12" role="alert" id="alert">
+  {{change_profile_success}}
+  <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+{{/if}}
+
+{{#if change_profile_fail}}
+
+<!-- Alerta -->
+<div class="alert alert-danger col-12" role="alert" id="alert">
+  {{change_profile_fail}}
+  <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+{{/if}}
