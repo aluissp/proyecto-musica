@@ -10,6 +10,10 @@ router.route('/addmusic')
 
         const consulta = await db.query("select * from albumes where id_art= $1", [req.user.id_art]);
         const albumes = consulta.rows;
+        albumes.forEach(async (album)=>{
+            const response = await db.query("select nombre_gen from generos where id_gen= $1", [album.id_gen]);
+            album.genero = response.rows[0].nombre_gen;
+        });
         res.render('links/addAlbum', { albumes });
     });
 
@@ -25,7 +29,7 @@ router.route('/addmusic/album')
             fecha
         ]
 
-        await db.query(`INSERT INTO 
+        await db.query(`INSERT INTO
         albumes(id_art, nombre_alb, genero_alb, precio_alb, fecha_alb)
         VALUES($1, $2, $3, $4, $5)`, nuevoAlbum);
 
@@ -57,7 +61,7 @@ router.route('/addmusic/edit/:idAlbum')
         res.redirect('/home/addmusic');
     });
 
-// CRUD CANCIONES 
+// CRUD CANCIONES
 router.route('/addmusic/music/:idAlbum')
     .get(async (req, res) => {
         const { idAlbum } = req.params;

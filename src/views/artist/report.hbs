@@ -1,0 +1,98 @@
+<div class="container">
+
+  <div class="row col-12 card border-primary mx-auto mt-3">
+    <p class="lead mb-0 ml-3 mt-3 text-center">
+      OBTENER REPORTES
+    </p>
+
+    <ul class="nav nav-tabs">
+      <li class="nav-item">
+        <a
+          class="nav-link active"
+          data-bs-toggle="tab"
+          href="#musica"
+        >Musica</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" data-bs-toggle="tab" href="#fac">Facturacion</a>
+      </li>
+    </ul>
+    <div id="myTabContent" class="tab-content">
+      <div class="tab-pane fade show active" id="musica">
+
+        <form class="mt-0 d-flex justify-content-between" id="filters">
+          <div class="col-8 px-auto d-flex align-items-center">
+            <div class="col-6 border border-white rounded py-3 mr-1">
+              <label class="font-weight-bold text-info mr-3">Filtros</label>
+              <input type="radio" name="filtros" value="album" class="mx-1" checked/>
+              <label class="mx-0 mb-0">Album</label>
+              <input type="radio" name="filtros" value="cancion" class="mx-1"/>
+              <label class="mb-0" >Cancion</label>
+              <input type="radio" name="filtros" value="genero" class="mx-1" />
+              <label class="mb-0">Genero</label>
+            </div>
+            <div class="col-6 border border-white rounded py-3 ml-1">
+              <label class="font-weight-bold text-info mr-3">Ordenar por</label>
+              <input
+                type="radio"
+                name="ordenar"
+                id="fecha"
+                class="mx-1"
+                checked
+              />
+              <label class="mb-0">Fecha</label>
+              <input type="radio" name="ordenar" id="precio" class="mx-1" />
+              <label class="mb-0">Precio</label>
+            </div>
+          </div>
+          <div class="col-4 px-auto py-0">
+            <input class="form-control mt-3" name="letras" />
+            <div class="row py-2">
+              <div class="col-5">
+                <input
+                  type="radio"
+                  name="ordenar2"
+                  value="ASC"
+                  class="mx-1"
+                  checked
+                />
+                <label class="mb-0">Ascendente</label>
+                <input type="radio" name="ordenar2" value="DESC" class="mx-1" />
+                <label class="mb-0">Descendente</label>
+              </div>
+              <div class="col-7 d-flex justify-content-end">
+                <button class="btn btn-outline-danger mx-1" type="submit">
+                  PDF
+                  <i class="far fa-file-pdf"></i>
+                </button>
+                <button class="btn btn-outline-info ml-1" type="submit">
+                  Buscar
+                  <i class="fas fa-search"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </form>
+
+        <!-- Table -->
+
+        <table class="table table-striped" id="table">
+          <thead>
+            <tr>
+              <th scope="col">Cancion</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {{#each canciones}}{{/each}}
+          </tbody>
+        </table>
+      </div>
+      <div class="tab-pane fade" id="fac">
+        <p>facturacion parte 2</p>
+      </div>
+    </div>
+
+  </div>
+
+</div>

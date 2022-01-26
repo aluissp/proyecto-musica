@@ -81,8 +81,8 @@ passport.use('local.signupUser', new LocalStrategy({
     ]
     try {
         await db.query(`INSERT INTO
-        usuarios(id_usu, nombre_usu, apellido_usu, email_usu, contrasena_usu, fnacimiento_usu, genero_usu)
-        VALUES ('usu-2',$1, $2, $3, $4, $5, $6)`, newUser);
+        usuarios(id_usu, nombres, apellidos, email_usu, contrasena_usu, fecha_nacim, genero)
+        VALUES ('usu-1',$1, $2, $3, $4, $5, $6)`, newUser);
 
         const resultado = await db.query(`SELECT id_usu FROM usuarios WHERE email_usu = $1`, [usermail]);
         newUser.id = resultado.rows[0].id_usu;
@@ -103,7 +103,7 @@ passport.deserializeUser(async (id, done) => {
     const rowsArt = consultaArt.rows;
     const rowsUs = consultaUs.rows;
 
-    if (rowsArt.length > 0) {
+ if (rowsArt.length > 0) {
         rowsArt[0].isArt = true;
         // console.log(rowsArt);
         done(null, rowsArt[0]);
