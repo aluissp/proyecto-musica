@@ -12,3 +12,5 @@ Dependencias usadas
  - connect-pg-simple
  - passport
  - passport-local
+ - pdfkit
+ - pdfkit-construct

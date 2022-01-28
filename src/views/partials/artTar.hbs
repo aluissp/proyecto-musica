@@ -43,7 +43,7 @@
                             <input type="date" class="form-control" name="fcaducidad" id="fcad-tar">
                         </div>
                     </div>
-                    <div class="row d-flex justify-content-end modal-footer">    
+                    <div class="row d-flex justify-content-end modal-footer">
                         <button type="button" class="btn btn-secondary mx-3 px-4" data-bs-dismiss="modal">
                         Cerrar
                         </button>
@@ -113,7 +113,6 @@
                 </div>
 
             </form>
-
             {{#if tarjetas}}
             <h4 class="mt-2 px-0 col-12 text-success">Sus tarjetas</h4>
             <table class="table table-striped" id="table-card">
@@ -153,31 +152,31 @@
         if (tabla) {
             const modalDelete = document.getElementById('modal-delete-card');
             const form = document.getElementById('form-edit-card');
-    
+
             const tarA = document.getElementById('tipoTarA');
             const tarB = document.getElementById('tipoTarB');
             const nroTarjeta = document.getElementById('nro-tar');
             const fcad = document.getElementById('fcad-tar');
-    
+
             for (i = 0; i < tabla.rows.length; i++) {
               // Atributos de cada row
               const id = tabla.rows[i].getAttribute('id');
               const tipoTarRow = tabla.rows[i].children[0].getAttribute('tipotaraux');
               const nroTarRow = tabla.rows[i].children[1].getAttribute('nrotaraux');
               const dateTarRow = tabla.rows[i].children[2].getAttribute('dateaux');
-    
+
               const btnEdit = tabla.rows[i].children[3].children[0];
               const btnDelete = tabla.rows[i].children[3].children[1];
-              
+
               // console.log(id, tipoTarRow, nroTarRow, dateTarRow, btnEdit, btnDelete);
               btnDelete.onclick = () => {
                 modalDelete.setAttribute('href', `/profile/art/card/delete/${id}`);
               }
-        
+
               btnEdit.onclick = () => {
                 tarA.removeAttribute('checked');
                 tarB.removeAttribute('checked');
-                if (tipoTarRow === 'Tarjeta de debito') {  
+                if (tipoTarRow === 'Tarjeta de debito') {
                     tarA.setAttribute('checked', "");
                 } else {
                     tarB.setAttribute('checked', "");

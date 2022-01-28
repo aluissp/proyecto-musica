@@ -7,46 +7,90 @@
 
     <ul class="nav nav-tabs">
       <li class="nav-item">
-        <a
-          class="nav-link active"
-          data-bs-toggle="tab"
-          href="#musica"
-        >Musica</a>
+
+        {{#if inMusic}}
+         <a class="nav-link active" data-bs-toggle="tab" href="#musica">Musica</a>
+          {{else}}
+         <a class="nav-link" data-bs-toggle="tab" href="#musica">Musica</a>
+        {{/if}}
       </li>
       <li class="nav-item">
+        {{#if inFac}}
+        <a class="nav-link active" data-bs-toggle="tab" href="#fac">Facturacion</a>
+        {{else}}
         <a class="nav-link" data-bs-toggle="tab" href="#fac">Facturacion</a>
+        {{/if}}
       </li>
     </ul>
     <div id="myTabContent" class="tab-content">
       <div class="tab-pane fade show active" id="musica">
 
-        <form class="mt-0 d-flex justify-content-between" id="filters">
+        <form class="mt-0 d-flex justify-content-between" method="POST" id="filters-music">
           <div class="col-8 px-auto d-flex align-items-center">
             <div class="col-6 border border-white rounded py-3 mr-1">
               <label class="font-weight-bold text-info mr-3">Filtros</label>
-              <input type="radio" name="filtros" value="album" class="mx-1" checked/>
+              <input
+                type="radio"
+                name="filtros"
+                value="albumes"
+                class="mx-1"
+                id="alb-music"
+                checked
+              />
               <label class="mx-0 mb-0">Album</label>
-              <input type="radio" name="filtros" value="cancion" class="mx-1"/>
-              <label class="mb-0" >Cancion</label>
-              <input type="radio" name="filtros" value="genero" class="mx-1" />
+              <input
+                type="radio"
+                name="filtros"
+                value="canciones"
+                class="mx-1"
+                id="can-music"
+              />
+              <label class="mb-0">Cancion</label>
+              <input
+                type="radio"
+                name="filtros"
+                value="generos"
+                class="mx-1"
+                id="gen-music"
+              />
               <label class="mb-0">Genero</label>
+              <div class="row d-flex mx-1 ">
+              <input class="form-control d-none" list="list-albumes" name="albumfilter"
+              id="albumfilter">
+								<datalist id="list-albumes">
+                  {{#each albumes}}
+									<option value="{{nombre_alb}}"></option>
+                  {{/each}}
+								</datalist>
+              </div>
             </div>
             <div class="col-6 border border-white rounded py-3 ml-1">
               <label class="font-weight-bold text-info mr-3">Ordenar por</label>
               <input
                 type="radio"
                 name="ordenar"
-                id="fecha"
+                value="fecha_alb"
+                id="order1"
                 class="mx-1"
                 checked
               />
-              <label class="mb-0">Fecha</label>
-              <input type="radio" name="ordenar" id="precio" class="mx-1" />
-              <label class="mb-0">Precio</label>
+              <label class="mb-0" id="lb1">Fecha</label>
+              <input
+                type="radio"
+                name="ordenar"
+                value="precio_alb"
+                class="mx-1"
+                id="order2"
+              />
+              <label class="mb-0" id="lb2">Precio</label>
             </div>
           </div>
           <div class="col-4 px-auto py-0">
-            <input class="form-control mt-3" name="letras" />
+            <input
+              class="form-control mt-3"
+              name="wordkey"
+              placeholder="Ingrese el album/cancion/genero a filtrar"
+            />
             <div class="row py-2">
               <div class="col-5">
                 <input
@@ -61,11 +105,14 @@
                 <label class="mb-0">Descendente</label>
               </div>
               <div class="col-7 d-flex justify-content-end">
-                <button class="btn btn-outline-danger mx-1" type="submit">
+                <button class="btn btn-outline-danger mx-1 d-flex align-items-center"
+                   type="submit"
+                   id="music-pdf">
                   PDF
-                  <i class="far fa-file-pdf"></i>
+                  <i class="far fa-file-pdf ml-1"></i>
                 </button>
-                <button class="btn btn-outline-info ml-1" type="submit">
+                <button class="btn btn-outline-info ml-1" type="submit"
+                        id="music-search">
                   Buscar
                   <i class="fas fa-search"></i>
                 </button>
@@ -79,12 +126,34 @@
         <table class="table table-striped" id="table">
           <thead>
             <tr>
-              <th scope="col">Cancion</th>
+              {{#each headerTable}}
+              <th scope="col">{{column_name}}</th>
+              {{/each}}
+              <th></th>
             </tr>
           </thead>
 
           <tbody>
-            {{#each canciones}}{{/each}}
+            {{#each report}}
+            <tr>
+              <td>{{nombre_alb}}</td>
+              <td>{{numpistas_alb}}</td>
+              <td>{{precio_alb}}</td>
+              <td>{{dateFormat fecha_alb}}</td>
+              <td>{{nombre_gen}}</td>
+              <td></td>
+            </tr>
+            {{/each}}
+
+            {{#each reportSong}}
+            <tr>
+              <td>{{nombre_can}}</td>
+              <td>{{nropista_can}}</td>
+              <td>{{nombre_gen}}</td>
+              <td>{{duracion_can}}</td>
+              <td></td>
+            </tr>
+            {{/each}}
           </tbody>
         </table>
       </div>
@@ -94,5 +163,75 @@
     </div>
 
   </div>
-
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const chAlb = document.getElementById('alb-music');
+    const chCan = document.getElementById('can-music');
+    const chGen = document.getElementById('gen-music');
+
+    const formMusic = document.getElementById('filters-music');
+
+    // Label and input check order const
+    const chOrd1 = document.getElementById('order1');
+    const chOrd2 = document.getElementById('order2');
+
+    const label1 = document.getElementById('lb1');
+    const label2 = document.getElementById('lb2');
+    const inputAlbum = document.getElementById('albumfilter');
+
+    // Btn music
+    const btnMusicPdf = document.getElementById('music-pdf');
+    const btnMusicSearch = document.getElementById('music-search');
+
+    const changeOptions = (checkoption, text1, text2) => {
+      chOrd1.removeAttribute('checked');
+      chOrd2.removeAttribute('checked');
+
+      chOrd1.removeAttribute('disabled');
+      chOrd2.removeAttribute('disabled');
+
+      inputAlbum.classList.add('d-none');
+
+      if (checkoption === '1') {
+        chOrd1.setAttribute('checked', '');
+
+        chOrd1.value = 'fecha_alb'
+        chOrd2.value = 'precio_alb'
+
+        label1.innerText = text1;
+        label2.innerText = text2;
+      } else if (checkoption === '2') {
+        chOrd1.setAttribute('checked', '');
+        inputAlbum.classList.remove('d-none');
+
+        chOrd1.value = 'duracion_can'
+        chOrd2.value = 'nropista_can'
+
+        label1.innerText = text1;
+        label2.innerText = text2;
+      } else if (checkoption === '3') {
+        chOrd1.setAttribute('checked', '');
+
+        chOrd1.setAttribute('disabled', '');
+        chOrd2.setAttribute('disabled', '');
+        label1.innerText = text1;
+        label2.innerText = text2;
+      }
+    }
+
+    chAlb.onclick = () => changeOptions('1', 'Fecha', 'Precio');
+    chCan.onclick = () => changeOptions('2', 'Duracion', 'Numero pista');
+    chGen.onclick = () => changeOptions('3', '', 'No disponible');
+
+    formMusic.removeAttribute('action');
+
+    btnMusicPdf.onclick = () => {
+      formMusic.setAttribute('action', '/profile/report/music/pdf');
+    }
+    btnMusicSearch.onclick = () =>{
+      formMusic.setAttribute('action', '/profile/report/music');
+    }
+  });
+</script>

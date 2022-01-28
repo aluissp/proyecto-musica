@@ -84,7 +84,6 @@
     const titulom = document.getElementById('titulo-m');
     const fecham = document.getElementById('fecha-m');
     const npistasm = document.getElementById('npistas-m');
-    const generom = document.getElementById('genero-m');
     const preciom = document.getElementById('precio-m');
 
     for (i = 1; i < tabla.rows.length; i++) {
@@ -107,7 +106,6 @@
         titulom.value = titulo;
         const d = fecha.split('/');
         fecham.value = `${d[2]}-${d[1]}-${d[0]}`;
-        generom.value = genero;
         preciom.value = precio.slice(2);
         form.setAttribute('action', `/home/addmusic/edit/${id}`);
       }

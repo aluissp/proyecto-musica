@@ -60,19 +60,19 @@
                 <form id="form-buy-plan" method="POST">
                     <div class="col-12 d-flex">
                         <h5 class="col-7 px-0">Esta seguro de comprar el</h5>
-                        <h5 class="col-4 text-info px-0" id="name-plan-buy"></h5> 
+                        <h5 class="col-4 text-info px-0" id="name-plan-buy"></h5>
                     </div>
                     <div class="col-12 d-flex">
                         <div class="col-6 pl-0">
                             <h5 class="px-0"> Su tarjeta es : </h5>
-                            <h5 class="px-0 text-warning" id="nro-card-buy"></h5> 
+                            <h5 class="px-0 text-warning" id="nro-card-buy"></h5>
                         </div>
                         <div class="col-6 ml-4">
                             <h5 > El precio total es : </h5>
-                            <h5 class="text-warning" id="price-plan-buy"></h5> 
+                            <h5 class="text-warning" id="price-plan-buy"></h5>
                         </div>
                     </div>
-                    <div class="row d-flex justify-content-end modal-footer">    
+                    <div class="row d-flex justify-content-end modal-footer">
                         <button type="button" class="btn btn-secondary mx-3 px-4" data-bs-dismiss="modal">
                         Cerrar
                         </button>
@@ -125,7 +125,7 @@
         <div class="row px-3">
             <h4 class="col-12 p-0 text-success">Plan actual</h4>
              {{> messageBuy}}
-             
+
             {{#if planActual}}
             <table class="table table-striped" id="table">
                 <thead>
@@ -159,18 +159,11 @@
             {{else}}
             <h6 class="col-12 pt-2 px-0 text-warning">No cuentas con ningun plan actualmente, elige uno de nuestros planes que se muestran a continuacion.</h6>
             <ul class="nav nav-tabs col-12">
-              <li class="nav-item">
-                <a class="nav-link active" data-bs-toggle="tab" href="#pl-1">Plan Básico</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" data-bs-toggle="tab" href="#pl-2">Plan Normal</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" data-bs-toggle="tab" href="#pl-3">Plan Gold</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" data-bs-toggle="tab" href="#pl-4">Plan Platino</a>
-              </li>
+                {{#each planes}}
+                <li class="nav-item">
+                    <a class="nav-link active" data-bs-toggle="tab" href="#{{id_pl}}">{{nombre_pl}}</a>
+                </li>
+              {{/each}}
             </ul>
             <div id="buy-table" class="tab-content col-12">
                 {{#each planes}}

@@ -14,28 +14,38 @@ router.route('/addmusic')
             const response = await db.query("select nombre_gen from generos where id_gen= $1", [album.id_gen]);
             album.genero = response.rows[0].nombre_gen;
         });
-        res.render('links/addAlbum', { albumes });
+        const generos = (await db.query("select * from generos")).rows;
+        res.render('links/addAlbum', { albumes, generos });
     });
 
 router.route('/addmusic/album')
     .post(async (req, res) => {
-        const { titulo, fecha, npistas, genero, precio } = req.body;
-        const precio_n = Number(precio);
-        const nuevoAlbum = [
-            req.user.id_art,
-            titulo,
-            genero,
-            precio_n,
-            fecha
-        ]
+        try {
 
-        await db.query(`INSERT INTO
-        albumes(id_art, nombre_alb, genero_alb, precio_alb, fecha_alb)
-        VALUES($1, $2, $3, $4, $5)`, nuevoAlbum);
+            const { titulo, fecha, genero, precio } = req.body;
+            const precio_n = Number(precio);
+            const response = await db.query("select id_gen from generos where nombre_gen= $1", [genero]);
+            const idGen = response.rows[0].id_gen;
 
-        // req.flash('success_album','Album guardado correctamente');
-        res.redirect('/home/addmusic');
-    });
+            const nuevoAlbum = [
+                req.user.id_art,
+                titulo,
+                idGen,
+                precio_n,
+                fecha
+            ]
+
+            await db.query(`INSERT INTO
+            albumes(id_art, nombre_alb, id_gen, precio_alb, fecha_alb)
+            VALUES($1, $2, $3, $4, $5)`, nuevoAlbum);
+
+            // req.flash('success_album','Album guardado correctamente');
+            res.redirect('/home/addmusic');
+        } catch (e) {
+            console.error(e);
+            res.redirect('/home/addmusic');
+        }
+        });
 
 router.route('/addmusic/delete/:idAlbum')
     .get(async (req, res) => {
@@ -49,14 +59,16 @@ router.route('/addmusic/edit/:idAlbum')
         const { idAlbum } = req.params;
         const { titulo, fecha, genero, precio } = req.body;
         const precio_n = Number(precio);
+        const response = await db.query("select id_gen from generos where nombre_gen= $1", [genero]);
+        const idGen = response.rows[0].id_gen;
         const editAlbum = [
             titulo,
             fecha,
-            genero,
+            idGen,
             precio_n,
             idAlbum
         ]
-        await db.query('update albumes set nombre_alb = $1, fecha_alb = $2, genero_alb = $3, precio_alb = $4 where id_alb = $5', editAlbum);
+        await db.query('update albumes set nombre_alb = $1, fecha_alb = $2, id_gen = $3, precio_alb = $4 where id_alb = $5', editAlbum);
 
         res.redirect('/home/addmusic');
     });
@@ -66,9 +78,11 @@ router.route('/addmusic/music/:idAlbum')
     .get(async (req, res) => {
         const { idAlbum } = req.params;
         const consulta = await db.query("select * from canciones where id_alb= $1 order by nropista_can", [idAlbum]);
-        const consulta2 = await db.query("select genero_alb from albumes where id_alb= $1", [idAlbum]);
         const canciones = consulta.rows;
-        const genero = consulta2.rows[0].genero_alb;
+        const consulta2 = await db.query("select id_gen from albumes where id_alb= $1", [idAlbum]);
+        const genero = (await db.query('select nombre_gen from generos where id_gen = $1',[consulta2.rows[0].id_gen])).rows[0].nombre_gen;
+        console.log(consulta2.rows);
+
         canciones.forEach((cancion) => {
             cancion.genero = genero
         });

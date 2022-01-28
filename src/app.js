@@ -50,6 +50,7 @@ app.use(passport.session());
 app.use((req, res, next) => {
   app.locals.success_album = req.flash("success_album");
   app.locals.message_card = req.flash("message_card");
+  // ARTISTAS
   app.locals.message_card_success = req.flash("message_card_success");
   app.locals.buy_art_success = req.flash("buy_art_success");
   app.locals.buy_art_fail = req.flash("buy_art_fail");
@@ -68,8 +69,8 @@ app.use((req, res, next) => {
 const indexRoute = require("./routes/index").router;
 const linksRoute = require("./routes/links").router;
 const authRoute = require("./routes/autenticacion").router;
-const profileArtRoute = require("./routes/profileArt").router;
-const profileUsRoute = require("./routes/profileUs").router;
+const profileArtRoute = require("./routes/art").router;
+const profileUsRoute = require("./routes/user").router;
 
 // Usando rutas
 app.use("/", indexRoute);

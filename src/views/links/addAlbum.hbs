@@ -35,9 +35,13 @@
             </div>
 
             <div class="col-7 d-flex align-items-center justify-content-between my-2">
-              <label class="m-0">Genero</label>
-              <input type="text" id="genero-m" name='genero' class="form-control col-9" placeholder="Ingrese el genero"
-                required>
+              <label for="genero" class="form-label">Selecciona tu genero</label>
+								<input class="form-control col-7" list="genero-m" name="genero" required>
+								<datalist id="genero-m">
+                  {{#each generos}}
+									<option value="{{nombre_gen}}"></option>
+                  {{/each}}
+								</datalist>
             </div>
 
           </div>
@@ -85,9 +89,13 @@
                 required>
             </div>
             <div class="col-7 d-flex align-items-center justify-content-between my-2">
-              <label class="m-0">Genero</label>
-              <input type="text" id="genero" name='genero' class="form-control col-9" placeholder="Ingrese el genero"
-                required>
+                <label for="genero" class="form-label">Selecciona tu genero</label>
+								<input class="form-control col-7" list="generos" name="genero" required>
+								<datalist id="generos">
+                  {{#each generos}}
+									<option value="{{nombre_gen}}"></option>
+                  {{/each}}
+								</datalist>
             </div>
           </div>
         </div>
@@ -104,6 +112,3 @@
 
   </div>
 </main>
-
-
-{{!-- href="/home/addmusic/edit/{{id_al}}" --}}
