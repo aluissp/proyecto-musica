@@ -19,6 +19,9 @@ const {
   // Reportes
   getMusicReport,
   getMusicPDF,
+  getBillReport,
+  getBillPDF,
+  getDefaultBillReport,
 } = require('../lib/suscription');
 
 // TARJETAS
@@ -133,11 +136,7 @@ router.route('/art/card/edit/:id').post(async (req, res) => {
   }
   res.redirect('/profile/art/4');
 });
-// Fistros tarjetas
-router.route('/art/card/filter').post(async (req, res) => {
-  console.log(req.body);
-  res.send('Filtrando');
-});
+
 // Suscripciones
 router.route('/art/sub/:idplan').post(async (req, res) => {
   const idplan = req.params.idplan;
@@ -152,12 +151,19 @@ router.route('/art/sub/:idplan').post(async (req, res) => {
   res.redirect('/profile/art/3');
 });
 
-// Reportes
+// Reportes default
 router.route('/report').get(async (req, res) => {
   const response = await getMusicReport(req.user.id_art);
+  const { planes, tarjetas, reportFac, headerTableFac } =
+    await getDefaultBillReport(req.user.id_art);
+  response.planes = planes;
+  response.tarjetas = tarjetas;
+  response.reportFac = reportFac;
+  response.headerTableFac = headerTableFac;
   res.render('artist/report', response);
 });
 
+// Musica
 router.route('/report/music').post(async (req, res) => {
   const { filtros, ordenar, wordkey, ordenar2, albumfilter } = req.body;
   const response = await getMusicReport(
@@ -181,10 +187,58 @@ router.route('/report/music/pdf').post(async (req, res) => {
     albumfilter
   );
 
-  const doc = new PDF({ bufferPages: true, font: 'Helvetica' });
+  const doc = new PDF({
+    bufferPages: true,
+    font: 'Helvetica',
+    size: 'A4',
+    margins: { top: 20, left: 10, right: 10, bottom: 20 },
+  });
   const stream = res.writeHead(200, {
     'Content-Type': 'application/pdf',
     'Content-disposition': `attachment;filename=ReporteMusica_${req.user.seudonimo_art}.pdf`,
+  });
+
+  doc.on('data', (data) => {
+    stream.write(data);
+  });
+  doc.on('end', () => {
+    stream.end();
+  });
+  await getMusicPDF(req, doc, response);
+});
+// Factura 'suscripcion'
+router.route('/report/bill').post(async (req, res) => {
+  const { filtros, ordenar, wordkey, ordenar2, albumfilter } = req.body;
+  const response = await getMusicReport(
+    req.user.id_art,
+    filtros,
+    ordenar,
+    wordkey,
+    ordenar2,
+    albumfilter
+  );
+  res.render('artist/report', response);
+});
+router.route('/report/bill/pdf').post(async (req, res) => {
+  const { filtros, ordenar, wordkey, ordenar2, albumfilter } = req.body;
+  const response = await getMusicReport(
+    req.user.id_art,
+    filtros,
+    ordenar,
+    wordkey,
+    ordenar2,
+    albumfilter
+  );
+
+  const doc = new PDF({
+    bufferPages: true,
+    font: 'Helvetica',
+    size: 'A4',
+    margins: { top: 20, left: 10, right: 10, bottom: 20 },
+  });
+  const stream = res.writeHead(200, {
+    'Content-Type': 'application/pdf',
+    'Content-disposition': `attachment;filename=ReporteSuscripcion_${req.user.seudonimo_art}.pdf`,
   });
 
   doc.on('data', (data) => {

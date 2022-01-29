@@ -282,61 +282,345 @@ const getMusicPDF = async (req, doc, content) => {
       }/${anio}`;
     });
   }
-  // const img = path.join(__dirname, '../public/img/epicentro-bar.jpg');
-  // doc.image(img, 45, 10, { width: 100 });
-  doc.setDocumentHeader({ height: '23%' }, () => {
-    doc.fontSize(13).text('REPORTES', { width: 420, align: 'center' });
-    doc.fontSize(11);
+  const img = path.join(__dirname, '../public/img/epicentro-bar.jpg');
+  doc.image(img, 460, 10, { width: 100 });
 
-    doc.text(`Nombre artístico: ${req.user.seudonimo_art}`, {
-      marginLeft: 45,
-      align: 'left',
-    });
-    doc.text(`Correo electronico: ${req.user.email_art}`, {
-      width: 420,
-      align: 'left',
-    });
-    doc.text(`Pais de residencia: ${req.user.pais_art}`, {
-      width: 420,
-      align: 'left',
-    });
-    doc.text('Resumen breve', {
-      width: 420,
-      align: 'left',
-    });
-    doc.text('');
-    if (isSong) {
-      doc.text('');
-    } else {
-      const { nroAlbumes, precioTotal, pistasTotal } = summaryAlbum(tabla);
+  // set the header to render in every page
+  doc.setDocumentHeader({ height: '8%' }, () => {
+    doc.moveUp();
+    doc.fill('#115dc8').fontSize(20).text('REPORTES', 240, 30);
+  });
 
-      doc.text(`Se filtró: ${nroAlbumes} albumes`, {
-        width: 420,
-        align: 'left',
-      });
-      doc.text(`El precio de los albumes: $ ${precioTotal} dólares en total`, {
-        width: 420,
-        align: 'left',
-      });
-      doc.text(`En total hay: ${pistasTotal} pistas`, {
-        width: 420,
-        align: 'left',
-      });
-    }
+  const header = [
+    { key: 'labelData', label: 'Datos Personales', aling: 'left' },
+    { key: 'userData', label: '', aling: 'left' },
+  ];
+
+  const userData = [
+    { labelData: 'Nombre artístico', userData: req.user.seudonimo_art },
+    { labelData: 'Correo electrónico', userData: req.user.email_art },
+    { labelData: 'País', userData: req.user.pais_art },
+  ];
+
+  doc.addTable(header, userData, {
+    border: { size: 0.1, color: '#cdcdcd' },
+    width: 'fill_body',
+    striped: true,
+    stripedColors: ['#ffffff', '#ffffff'],
+    // stripedColors: ['#fff', '#f0ecd5'],
+    headBackground: '#ffffff',
+    cellsPadding: 10,
+    cellsFontSize: 9,
+    marginLeft: 45,
+    marginRight: 45,
+    headAlign: 'left',
+    cellsAlign: 'left',
   });
 
   doc.addTable(colum, tabla, {
     border: null,
     width: 'fill_body',
     striped: true,
-    stripedColors: ['#f6f6f6', '#d6c4dd'],
+    headBackground: '#b1bfca',
+    stripedColors: ['#ffffff', '#e3f2fd'],
     cellsPadding: 10,
     marginLeft: 45,
     marginRight: 45,
     headAlign: 'left',
   });
+
+  const colf = [{ key: 'summary', label: 'Resumen', aling: 'left' }];
+  let dataf;
+  if (isSong) {
+    const footer = summarySong(tabla);
+    dataf = [
+      { summary: `Se filtro: ${footer.nroCanciones} canciones` },
+      {
+        summary: `La duracion total es: ${footer.durTotal.hour} horas con ${footer.durTotal.minute} minutos y ${footer.durTotal.second} segundos`,
+      },
+    ];
+  } else {
+    const footer = summaryAlbum(tabla);
+    dataf = [
+      { summary: `Se filtro: ${footer.nroAlbumes} albumes` },
+      { summary: `El precio total es: $ ${footer.precioTotal}` },
+      { summary: `El numero de pistas es: ${footer.pistasTotal}` },
+    ];
+  }
+
+  doc.addTable(colf, dataf, {
+    border: null,
+    width: 'fill_body',
+    striped: true,
+    headBackground: '#ffffff',
+    stripedColors: ['#ffffff', '#ffffff'],
+    cellsPadding: 3,
+    cellsFontSize: 10,
+    marginLeft: 45,
+    marginRight: 45,
+    headAlign: 'left',
+    cellsAlign: 'left',
+  });
+
   doc.render();
+
+  // doc.setPageNumbers((p, c) => `Página ${p} de ${c}`, 'bottom right');
   doc.end();
+};
+
+const getBillReport = async (
+  idArt,
+  tabla,
+  ordenar,
+  wordkey,
+  ordenar2,
+  albumfilter
+) => {
+  try {
+    const consulta1 = await db.query(
+      'SELECT nombre_alb FROM albumes WHERE id_art = $1',
+      [idArt]
+    );
+    if (idArt && !tabla) {
+      const headerTable = [
+        { column_name: 'Album' },
+        { column_name: 'Numero de pistas' },
+        { column_name: 'Precio' },
+        { column_name: 'Fecha' },
+        { column_name: 'Género' },
+      ];
+
+      const consulta = await db.query(
+        'SELECT nombre_alb, numpistas_alb, precio_alb, fecha_alb, nombre_gen FROM albumes INNER JOIN generos USING(id_gen) WHERE id_art = $1',
+        [idArt]
+      );
+      const response = {
+        headerTable,
+        report: consulta.rows,
+        albumes: consulta1.rows,
+        inMusic: true,
+      };
+      return response;
+    }
+
+    if (tabla === 'albumes') {
+      const headerTable = [
+        { column_name: 'Album' },
+        { column_name: 'Numero de pistas' },
+        { column_name: 'Precio' },
+        { column_name: 'Fecha' },
+        { column_name: 'Género' },
+      ];
+      const consulta = await db.query(
+        `SELECT nombre_alb, numpistas_alb, precio_alb, fecha_alb, nombre_gen
+       FROM albumes INNER JOIN generos USING(id_gen)
+       WHERE id_art = $1 AND nombre_alb LIKE '${wordkey}%'
+       ORDER BY ${ordenar} ${ordenar2}`,
+        [idArt]
+      );
+      const response = {
+        headerTable,
+        report: consulta.rows,
+        albumes: consulta1.rows,
+        inMusic: true,
+      };
+
+      return response;
+    } else if (tabla === 'canciones') {
+      const headerTable = [
+        { column_name: 'Cancion' },
+        { column_name: 'Numero de pista' },
+        { column_name: 'Género' },
+        { column_name: 'Duración' },
+      ];
+
+      const consulta = await db.query(
+        `SELECT nombre_can, nropista_can, nombre_gen, duracion_can
+        FROM canciones INNER JOIN albumes USING(id_alb)
+                       INNER JOIN generos USING(id_gen)
+        WHERE id_art = $1 AND nombre_can LIKE '${wordkey}%'
+        AND nombre_alb LIKE '${albumfilter}%'
+        ORDER BY ${ordenar} ${ordenar2}`,
+        [idArt]
+      );
+      const response = {
+        headerTable,
+        reportSong: consulta.rows,
+        albumes: consulta1.rows,
+        inMusic: true,
+        isSong: true,
+      };
+
+      return response;
+    } else if (tabla === 'generos') {
+      const headerTable = [
+        { column_name: 'Album' },
+        { column_name: 'Numero de pistas' },
+        { column_name: 'Precio' },
+        { column_name: 'Fecha' },
+        { column_name: 'Género' },
+      ];
+      const consulta = await db.query(
+        `
+        SELECT nombre_alb, numpistas_alb, precio_alb, fecha_alb, nombre_gen
+        FROM albumes INNER JOIN generos USING(id_gen)
+        WHERE id_art = $1 AND nombre_gen LIKE '${wordkey}%'
+        ORDER BY nombre_gen ${ordenar2}`,
+        [idArt]
+      );
+
+      const response = {
+        headerTable,
+        report: consulta.rows,
+        albumes: consulta1.rows,
+        inMusic: true,
+      };
+      return response;
+    }
+  } catch (e) {
+    console.log(e);
+  }
+};
+
+const getBillPDF = async (req, doc, content) => {
+  const { headerTable, report, reportSong, isSong } = content;
+  const tabla = report || reportSong;
+  const colum = [];
+  for (let key in tabla[0]) {
+    colum.push({ key });
+  }
+
+  for (let i = 0; i < colum.length; i++) {
+    colum[i].label = headerTable[i].column_name;
+    colum[i].align = 'left';
+  }
+
+  if (!isSong) {
+    tabla.forEach((row) => {
+      const dia = row.fecha_alb.getDate();
+      const mes = parseInt(row.fecha_alb.getMonth()) + 1;
+      const anio = row.fecha_alb.getFullYear();
+      row.fecha_alb = `${dia < 10 ? '0' + dia : dia}/${
+        mes < 10 ? '0' + mes : mes
+      }/${anio}`;
+    });
+  }
+  const img = path.join(__dirname, '../public/img/epicentro-bar.jpg');
+  doc.image(img, 460, 10, { width: 100 });
+
+  // set the header to render in every page
+  doc.setDocumentHeader({ height: '8%' }, () => {
+    doc.moveUp();
+    doc.fill('#115dc8').fontSize(20).text('REPORTES', 240, 30);
+  });
+
+  const header = [
+    { key: 'labelData', label: 'Datos Personales', aling: 'left' },
+    { key: 'userData', label: '', aling: 'left' },
+  ];
+
+  const userData = [
+    { labelData: 'Nombre artístico', userData: req.user.seudonimo_art },
+    { labelData: 'Correo electrónico', userData: req.user.email_art },
+    { labelData: 'País', userData: req.user.pais_art },
+  ];
+
+  doc.addTable(header, userData, {
+    border: { size: 0.1, color: '#cdcdcd' },
+    width: 'fill_body',
+    striped: true,
+    stripedColors: ['#ffffff', '#ffffff'],
+    // stripedColors: ['#fff', '#f0ecd5'],
+    headBackground: '#ffffff',
+    cellsPadding: 10,
+    cellsFontSize: 9,
+    marginLeft: 45,
+    marginRight: 45,
+    headAlign: 'left',
+    cellsAlign: 'left',
+  });
+
+  doc.addTable(colum, tabla, {
+    border: null,
+    width: 'fill_body',
+    striped: true,
+    headBackground: '#b1bfca',
+    stripedColors: ['#ffffff', '#e3f2fd'],
+    cellsPadding: 10,
+    marginLeft: 45,
+    marginRight: 45,
+    headAlign: 'left',
+  });
+
+  const colf = [{ key: 'summary', label: 'Resumen', aling: 'left' }];
+  let dataf;
+  if (isSong) {
+    const footer = summarySong(tabla);
+    dataf = [
+      { summary: `Se filtro: ${footer.nroCanciones} canciones` },
+      {
+        summary: `La duracion total es: ${footer.durTotal.hour} horas con ${footer.durTotal.minute} minutos y ${footer.durTotal.second} segundos`,
+      },
+    ];
+  } else {
+    const footer = summaryAlbum(tabla);
+    dataf = [
+      { summary: `Se filtro: ${footer.nroAlbumes} albumes` },
+      { summary: `El precio total es: $ ${footer.precioTotal}` },
+      { summary: `El numero de pistas es: ${footer.pistasTotal}` },
+    ];
+  }
+
+  doc.addTable(colf, dataf, {
+    border: null,
+    width: 'fill_body',
+    striped: true,
+    headBackground: '#ffffff',
+    stripedColors: ['#ffffff', '#ffffff'],
+    cellsPadding: 3,
+    cellsFontSize: 10,
+    marginLeft: 45,
+    marginRight: 45,
+    headAlign: 'left',
+    cellsAlign: 'left',
+  });
+
+  doc.render();
+
+  // doc.setPageNumbers((p, c) => `Página ${p} de ${c}`, 'bottom right');
+  doc.end();
+};
+
+const getDefaultBillReport = async (idArt) => {
+  const headerTableFac = [
+    { column_name: 'Orden #: Plan' },
+    { column_name: 'Fecha inicio' },
+    { column_name: 'Fecha fin' },
+    { column_name: 'Subtotal' },
+    { column_name: 'iva' },
+    { column_name: 'Total' },
+  ];
+
+  const consulta1 = await db.query(
+    `SELECT CONCAT(id_sus,': ', nombre_pl) orden, finico_sus, ffin_sus,subtotal_sus, iva_sus,total_sus
+    FROM suscripciones INNER JOIN planes USING(id_pl)
+    WHERE id_art = $1 ORDER BY finico_sus DESC`,
+    [idArt]
+  );
+  const consulta2 = await db.query('SELECT nombre_pl FROM planes');
+  const consulta3 = await db.query(
+    'SELECT numero_tar FROM tarjetas_artistas WHERE id_art = $1',
+    [idArt]
+  );
+
+  const response = {
+    planes: consulta2.rows,
+    tarjetas: consulta3.rows,
+    reportFac: consulta1.rows,
+    headerTableFac,
+  };
+
+  return response;
 };
 
 const summaryAlbum = (table) => {
@@ -351,6 +635,35 @@ const summaryAlbum = (table) => {
   return { nroAlbumes, precioTotal, pistasTotal };
 };
 
+const summarySong = (table) => {
+  let nroCanciones = 0;
+  let hour = 0;
+  let minute = 0;
+  let second = 0;
+  for (let row of table) {
+    nroCanciones++;
+    let fdate = new Date(`January 01, 2022 ${row.duracion_can}`);
+    hour += fdate.getHours();
+    minute += fdate.getMinutes();
+    second += fdate.getSeconds();
+    if (second >= 60) {
+      second = 0;
+      minute += 1;
+    }
+
+    if (minute >= 60) {
+      minute = 0;
+      hour += 1;
+    }
+  }
+  const durTotal = {
+    hour,
+    minute,
+    second,
+  };
+  return { nroCanciones, durTotal };
+};
+
 exports.getCardArt = getCardArt;
 exports.getPlans = getPlans;
 exports.getSuscriptions = getSuscriptions;
@@ -363,3 +676,6 @@ exports.changePass = changePass;
 exports.changeProfile = changeProfile;
 exports.getMusicReport = getMusicReport;
 exports.getMusicPDF = getMusicPDF;
+exports.getBillReport = getBillReport;
+exports.getBillPDF = getBillPDF;
+exports.getDefaultBillReport = getDefaultBillReport;

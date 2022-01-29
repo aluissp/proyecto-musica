@@ -81,7 +81,6 @@ router.route('/addmusic/music/:idAlbum')
         const canciones = consulta.rows;
         const consulta2 = await db.query("select id_gen from albumes where id_alb= $1", [idAlbum]);
         const genero = (await db.query('select nombre_gen from generos where id_gen = $1',[consulta2.rows[0].id_gen])).rows[0].nombre_gen;
-        console.log(consulta2.rows);
 
         canciones.forEach((cancion) => {
             cancion.genero = genero
