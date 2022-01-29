@@ -2,6 +2,7 @@ const express = require('express'); // Importamos la libreria
 const router = express.Router();
 const passport = require('passport');
 const { isLoggedIn, isNotLoggedIn } = require('../lib/auth');
+const { getSummaryMusic } = require('../lib/suscription');
 // ARTISTAS
 // Autenticacion
 router.route('/signup/artist')
@@ -15,8 +16,14 @@ router.route('/signup/artist')
     }));
 
 router.route('/home')
-    .get(isLoggedIn, (req, res) => {
-        res.render('home');
+    .get(isLoggedIn, async (req, res) => {
+        const albumes = await getSummaryMusic(req.user.id_art);
+        const info = {};
+
+        if (req.user.isArt) {
+            info.albumes = albumes;
+        }
+        res.render('home', info);
     });
 
 router.route('/logout')

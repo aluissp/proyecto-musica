@@ -70,14 +70,16 @@ const indexRoute = require("./routes/index").router;
 const linksRoute = require("./routes/links").router;
 const authRoute = require("./routes/autenticacion").router;
 const profileArtRoute = require("./routes/art").router;
-const profileUsRoute = require("./routes/user").router;
+const UserRoute = require("./routes/user").router;
+const adminRoute = require("./routes/admin").router;
 
 // Usando rutas
 app.use("/", indexRoute);
 app.use("/", authRoute);
 app.use("/home", linksRoute);
 app.use("/profile", profileArtRoute);
-app.use("/user", profileUsRoute);
+app.use("/user", UserRoute);
+app.use("/admin", adminRoute);
 
 // archivos
 app.use(express.static(path.join(__dirname, "public")));

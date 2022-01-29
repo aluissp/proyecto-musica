@@ -23,8 +23,11 @@
       </li>
     </ul>
     <div id="myTabContent" class="tab-content">
+      {{#if inMusic}}
       <div class="tab-pane fade show active" id="musica">
-
+        {{else}}
+      <div class="tab-pane fade show" id="musica">
+      {{/if}}
         <form class="mt-0 d-flex justify-content-between" method="POST" id="filters-music">
           <div class="col-8 px-auto d-flex align-items-center">
             <div class="col-6 border border-white rounded py-3 mr-1">
@@ -157,7 +160,11 @@
           </tbody>
         </table>
       </div>
-      <div class="tab-pane fade" id="fac">
+      {{#if inFac}}
+      <div class="tab-pane fade show active" id="fac">
+        {{else}}
+      <div class="tab-pane fade show" id="fac">
+      {{/if}}
         <form class="mt-0 d-flex justify-content-between" method="POST" id="filters-fac">
           <div class="col-8 px-auto d-flex align-items-center">
             <div class="col-6 border border-white rounded py-3 mr-1">
@@ -238,7 +245,7 @@
             <input
               class="form-control mt-3"
               name="wordkey"
-              placeholder="Ingrese el plan/tarjeta a filtrar"
+              placeholder="Ingrese el orden/tarjeta a filtrar"
             />
             <div class="row py-2">
               <div class="col-5">
@@ -261,6 +268,8 @@
                   <i class="far fa-file-pdf ml-1"></i>
                 </button>
                 <button class="btn btn-outline-info ml-1" type="submit"
+                        data-bs-toggle="tooltip" data-bs-placement="top"
+                        title="Para buscar solo tarjetas marcar Nro. tarjeta"
                         id="fac-search">
                   Buscar
                   <i class="fas fa-search"></i>
@@ -290,17 +299,18 @@
               <td>{{coinFormat subtotal_sus}}</td>
               <td>{{coinFormat iva_sus}}</td>
               <td>{{coinFormat total_sus}}</td>
+              {{#if tarjeta_fac}}
+              <td>{{tarjeta_fac}}</td>
+              {{/if}}
               {{!-- <td></td> --}}
             </tr>
             {{/each}}
 
-            {{#each reportSong}}
+            {{#each reportCard}}
             <tr>
-              <td>{{nombre_can}}</td>
-              <td>{{nropista_can}}</td>
-              <td>{{nombre_gen}}</td>
-              <td>{{duracion_can}}</td>
-              <td></td>
+              <td>{{tipo_tar}}</td>
+              <td>{{numero_tar}}</td>
+              <td>{{dateFormat fcaducidad}}</td>
             </tr>
             {{/each}}
           </tbody>
@@ -448,10 +458,10 @@
     chCard.onclick = () => chgBillOptions('2', 'Fecha compra', '$ pagado', '');
 
     btnBillPdf.onclick = () => {
-      formMusic.setAttribute('action', '/profile/report/bill/pdf');
+      formBill.setAttribute('action', '/profile/report/bill/pdf');
     }
     btnBillSearch.onclick = () =>{
-      formMusic.setAttribute('action', '/profile/report/bill');
+      formBill.setAttribute('action', '/profile/report/bill');
     }
   });
 </script>

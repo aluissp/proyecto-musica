@@ -161,7 +161,7 @@
             <ul class="nav nav-tabs col-12">
                 {{#each planes}}
                 <li class="nav-item">
-                    <a class="nav-link active" data-bs-toggle="tab" href="#{{id_pl}}">{{nombre_pl}}</a>
+                    <a class="nav-link" data-bs-toggle="tab" href="#{{id_pl}}">{{nombre_pl}}</a>
                 </li>
               {{/each}}
             </ul>
@@ -209,7 +209,7 @@
                     {{#each suscripciones}}
                     <tr>
                         <td>
-                            {{id_sus}} : {{plan}}
+                            {{id_sus}}: {{plan}}
                         </td>
                         <td>
                             {{dateFormat finico_sus}}

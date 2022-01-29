@@ -1,0 +1,63 @@
+<div class='accordion' id='accordionExample'>
+  {{#each albumes}}
+    <div class='accordion-item'>
+      <h4 class='accordion-header' id='heading{{id_alb}}'>
+        <span
+          class='accordion-button text-success col-4'
+          type='button'
+          data-bs-toggle='collapse'
+          data-bs-target='#collapse{{id_alb}}'
+          aria-expanded='true'
+          aria-controls='collapse{{id_alb}}'
+        >
+          {{nombre_alb}}
+        </span>
+        <lead class='text-warning h6 col-3'><strong>Número de pistas:
+            <lead class='text-white'>{{numpistas_alb}}</lead></strong></lead>
+        <lead class='text-warning h6 col-2'><strong>Lanzado hace:
+            <lead class='text-white'>{{timeago
+                fecha_alb
+              }}</lead></strong></lead>
+        <lead class='text-warning h6 col-2'><strong>Género:
+            <lead class='text-white'>{{nombre_gen}}</lead></strong></lead>
+      </h4>
+      <div
+        id='collapse{{id_alb}}'
+        class='accordion-collapse collapse'
+        aria-labelledby='heading{{id_alb}}'
+        data-bs-parent='#accordionExample'
+      >
+        <div class='accordion-body'>
+            <br>
+            <table class='table table-striped table-hover' id='table'>
+              <thead>
+                <tr>
+                  <th scope='col'>Canción</th>
+                  <th scope='col'></th>
+                  <th scope='col'>Duración</th>
+                  <th scope='col'>Número de pista</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {{#each canciones}}
+                  <tr>
+                    <td>
+                      {{nombre_can}}
+                    </td>
+                    <td></td>
+                    <td>
+                      {{duracion_can}}
+                    </td>
+                    <td>
+                      {{nropista_can}}
+                    </td>
+                  </tr>
+                {{/each}}
+              </tbody>
+            </table>
+        </div>
+      </div>
+    </div>
+  {{/each}}
+</div>

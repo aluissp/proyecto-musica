@@ -174,6 +174,12 @@ router.route('/report/music').post(async (req, res) => {
     ordenar2,
     albumfilter
   );
+  const { planes, tarjetas, reportFac, headerTableFac } =
+    await getDefaultBillReport(req.user.id_art);
+  response.planes = planes;
+  response.tarjetas = tarjetas;
+  response.reportFac = reportFac;
+  response.headerTableFac = headerTableFac;
   res.render('artist/report', response);
 });
 router.route('/report/music/pdf').post(async (req, res) => {
@@ -208,26 +214,30 @@ router.route('/report/music/pdf').post(async (req, res) => {
 });
 // Factura 'suscripcion'
 router.route('/report/bill').post(async (req, res) => {
-  const { filtros, ordenar, wordkey, ordenar2, albumfilter } = req.body;
-  const response = await getMusicReport(
+  const { filtros, ordenar, wordkey, ordenar2, planfilter, cardfilter } =
+    req.body;
+  const response = await getBillReport(
     req.user.id_art,
     filtros,
     ordenar,
     wordkey,
     ordenar2,
-    albumfilter
+    planfilter,
+    cardfilter
   );
   res.render('artist/report', response);
 });
 router.route('/report/bill/pdf').post(async (req, res) => {
-  const { filtros, ordenar, wordkey, ordenar2, albumfilter } = req.body;
-  const response = await getMusicReport(
+  const { filtros, ordenar, wordkey, ordenar2, planfilter, cardfilter } =
+    req.body;
+  const response = await getBillReport(
     req.user.id_art,
     filtros,
     ordenar,
     wordkey,
     ordenar2,
-    albumfilter
+    planfilter,
+    cardfilter
   );
 
   const doc = new PDF({
@@ -247,7 +257,7 @@ router.route('/report/bill/pdf').post(async (req, res) => {
   doc.on('end', () => {
     stream.end();
   });
-  await getMusicPDF(req, doc, response);
+  await getBillPDF(req, doc, response);
 });
 
 exports.router = router;

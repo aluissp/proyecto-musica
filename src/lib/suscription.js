@@ -374,107 +374,101 @@ const getBillReport = async (
   ordenar,
   wordkey,
   ordenar2,
-  albumfilter
+  planfilter,
+  cardfilter
 ) => {
   try {
     const consulta1 = await db.query(
       'SELECT nombre_alb FROM albumes WHERE id_art = $1',
       [idArt]
     );
-    if (idArt && !tabla) {
-      const headerTable = [
-        { column_name: 'Album' },
-        { column_name: 'Numero de pistas' },
-        { column_name: 'Precio' },
-        { column_name: 'Fecha' },
-        { column_name: 'Género' },
-      ];
+    const consulta2 = await db.query('SELECT nombre_pl FROM planes');
+    const consulta3 = await db.query(
+      'SELECT numero_tar FROM tarjetas_artistas WHERE id_art = $1',
+      [idArt]
+    );
 
+    const headerTable = [
+      { column_name: 'Album' },
+      { column_name: 'Numero de pistas' },
+      { column_name: 'Precio' },
+      { column_name: 'Fecha' },
+      { column_name: 'Género' },
+    ];
+
+    const consultadefaultmusic = await db.query(
+      'SELECT nombre_alb, numpistas_alb, precio_alb, fecha_alb, nombre_gen FROM albumes INNER JOIN generos USING(id_gen) WHERE id_art = $1',
+      [idArt]
+    );
+    const response = {
+      headerTable,
+      report: consultadefaultmusic.rows,
+      albumes: consulta1.rows,
+      inMusic: false,
+      inFac: true,
+      planes: consulta2.rows,
+      tarjetas: consulta3.rows,
+    };
+
+    if (tabla === 'planes') {
+      const headerTableFac = [
+        { column_name: 'Orden #: Plan' },
+        { column_name: 'Fecha inicio' },
+        { column_name: 'Fecha fin' },
+        { column_name: 'Subtotal' },
+        { column_name: 'iva' },
+        { column_name: 'Total' },
+      ];
       const consulta = await db.query(
-        'SELECT nombre_alb, numpistas_alb, precio_alb, fecha_alb, nombre_gen FROM albumes INNER JOIN generos USING(id_gen) WHERE id_art = $1',
+        `SELECT CONCAT(id_sus,': ', nombre_pl) orden, finico_sus, ffin_sus,subtotal_sus, iva_sus,total_sus
+        FROM suscripciones INNER JOIN planes USING(id_pl)
+        WHERE id_art = $1 AND nombre_pl LIKE '${planfilter}%'
+        AND CONCAT(id_sus,': ', nombre_pl) LIKE '${wordkey}%'
+        ORDER BY ${ordenar} ${ordenar2};`,
         [idArt]
       );
-      const response = {
-        headerTable,
-        report: consulta.rows,
-        albumes: consulta1.rows,
-        inMusic: true,
-      };
-      return response;
-    }
 
-    if (tabla === 'albumes') {
-      const headerTable = [
-        { column_name: 'Album' },
-        { column_name: 'Numero de pistas' },
-        { column_name: 'Precio' },
-        { column_name: 'Fecha' },
-        { column_name: 'Género' },
-      ];
-      const consulta = await db.query(
-        `SELECT nombre_alb, numpistas_alb, precio_alb, fecha_alb, nombre_gen
-       FROM albumes INNER JOIN generos USING(id_gen)
-       WHERE id_art = $1 AND nombre_alb LIKE '${wordkey}%'
-       ORDER BY ${ordenar} ${ordenar2}`,
-        [idArt]
-      );
-      const response = {
-        headerTable,
-        report: consulta.rows,
-        albumes: consulta1.rows,
-        inMusic: true,
-      };
+      response.reportFac = consulta.rows;
+      response.headerTableFac = headerTableFac;
 
       return response;
-    } else if (tabla === 'canciones') {
-      const headerTable = [
-        { column_name: 'Cancion' },
-        { column_name: 'Numero de pista' },
-        { column_name: 'Género' },
-        { column_name: 'Duración' },
+    } else if (tabla === 'tarjetas_artistas' && wordkey === '') {
+      const headerTableFac = [
+        { column_name: 'Orden #: Plan' },
+        { column_name: 'Fecha inicio' },
+        { column_name: 'Fecha fin' },
+        { column_name: 'Subtotal' },
+        { column_name: 'iva' },
+        { column_name: 'Total' },
+        { column_name: 'Nro. tarjeta' },
       ];
-
       const consulta = await db.query(
-        `SELECT nombre_can, nropista_can, nombre_gen, duracion_can
-        FROM canciones INNER JOIN albumes USING(id_alb)
-                       INNER JOIN generos USING(id_gen)
-        WHERE id_art = $1 AND nombre_can LIKE '${wordkey}%'
-        AND nombre_alb LIKE '${albumfilter}%'
+        `SELECT CONCAT(id_sus,': ', nombre_pl) orden, finico_sus, ffin_sus,subtotal_sus, iva_sus,total_sus, tarjeta_fac
+        FROM suscripciones INNER JOIN planes USING(id_pl)
+        WHERE id_art = $1 AND tarjeta_fac LIKE '${cardfilter}%'
         ORDER BY ${ordenar} ${ordenar2}`,
         [idArt]
       );
-      const response = {
-        headerTable,
-        reportSong: consulta.rows,
-        albumes: consulta1.rows,
-        inMusic: true,
-        isSong: true,
-      };
+      response.reportFac = consulta.rows;
+      response.headerTableFac = headerTableFac;
 
       return response;
-    } else if (tabla === 'generos') {
-      const headerTable = [
-        { column_name: 'Album' },
-        { column_name: 'Numero de pistas' },
-        { column_name: 'Precio' },
-        { column_name: 'Fecha' },
-        { column_name: 'Género' },
+    } else if (tabla === 'tarjetas_artistas' && wordkey !== '') {
+      const headerTableFac = [
+        { column_name: 'Tipo de tarjeta' },
+        { column_name: 'Nro. de tarjeta' },
+        { column_name: 'Fecha de caducidad' },
       ];
       const consulta = await db.query(
-        `
-        SELECT nombre_alb, numpistas_alb, precio_alb, fecha_alb, nombre_gen
-        FROM albumes INNER JOIN generos USING(id_gen)
-        WHERE id_art = $1 AND nombre_gen LIKE '${wordkey}%'
-        ORDER BY nombre_gen ${ordenar2}`,
+        `SELECT tipo_tar, numero_tar, fcaducidad
+        FROM tarjetas_artistas
+        WHERE id_art = $1 AND numero_tar LIKE '${wordkey}%'
+        ORDER BY fcaducidad;`,
         [idArt]
       );
-
-      const response = {
-        headerTable,
-        report: consulta.rows,
-        albumes: consulta1.rows,
-        inMusic: true,
-      };
+      response.reportCard = consulta.rows;
+      response.headerTableFac = headerTableFac;
+      response.isCard = true;
       return response;
     }
   } catch (e) {
@@ -483,35 +477,39 @@ const getBillReport = async (
 };
 
 const getBillPDF = async (req, doc, content) => {
-  const { headerTable, report, reportSong, isSong } = content;
-  const tabla = report || reportSong;
+  const { headerTableFac, reportFac, reportCard, isCard } = content;
+  const tabla = reportFac || reportCard;
   const colum = [];
   for (let key in tabla[0]) {
     colum.push({ key });
   }
 
   for (let i = 0; i < colum.length; i++) {
-    colum[i].label = headerTable[i].column_name;
+    colum[i].label = headerTableFac[i].column_name;
     colum[i].align = 'left';
   }
 
-  if (!isSong) {
+  if (!isCard) {
     tabla.forEach((row) => {
-      const dia = row.fecha_alb.getDate();
-      const mes = parseInt(row.fecha_alb.getMonth()) + 1;
-      const anio = row.fecha_alb.getFullYear();
-      row.fecha_alb = `${dia < 10 ? '0' + dia : dia}/${
-        mes < 10 ? '0' + mes : mes
-      }/${anio}`;
+      row.finico_sus = dateFormat(row.finico_sus);
+      row.ffin_sus = dateFormat(row.ffin_sus);
+      row.subtotal_sus = `$ ${row.subtotal_sus.toFixed(2)}`;
+      row.iva_sus = `$ ${row.iva_sus.toFixed(2)}`;
+      row.total_sus = `$ ${row.total_sus.toFixed(2)}`;
+    });
+  } else {
+    tabla.forEach((row) => {
+      row.fcaducidad = dateFormat(row.fcaducidad);
     });
   }
+
   const img = path.join(__dirname, '../public/img/epicentro-bar.jpg');
   doc.image(img, 460, 10, { width: 100 });
 
   // set the header to render in every page
   doc.setDocumentHeader({ height: '8%' }, () => {
     doc.moveUp();
-    doc.fill('#115dc8').fontSize(20).text('REPORTES', 240, 30);
+    doc.fill('#115dc8').fontSize(20).text('FACTURACIÓN', 240, 30);
   });
 
   const header = [
@@ -552,6 +550,8 @@ const getBillPDF = async (req, doc, content) => {
     headAlign: 'left',
   });
 
+  billPageCard(tabla);
+  /*
   const colf = [{ key: 'summary', label: 'Resumen', aling: 'left' }];
   let dataf;
   if (isSong) {
@@ -583,7 +583,7 @@ const getBillPDF = async (req, doc, content) => {
     marginRight: 45,
     headAlign: 'left',
     cellsAlign: 'left',
-  });
+  });*/
 
   doc.render();
 
@@ -664,6 +664,59 @@ const summarySong = (table) => {
   return { nroCanciones, durTotal };
 };
 
+const dateFormat = (date) => {
+  dia = date.getDate();
+  mes = parseInt(date.getMonth()) + 1;
+  anio = date.getFullYear();
+  return `${dia < 10 ? '0' + dia : dia}/${mes < 10 ? '0' + mes : mes}/${anio}`;
+};
+
+const billPageCard = (table) => {
+  let cards = [];
+
+  for (let row of table) {
+    console.log(row);
+    if (cards.length === 0) {
+      cards.push(row.tarjeta_fac);
+    }
+    for (const card of cards) {
+      if (!(card === row.tarjeta_fac)) {
+        cards.push(row.tarjeta_fac);
+      }
+    }
+  }
+  console.log(cards);
+  //return { nroAlbumes, precioTotal, pistasTotal };
+};
+
+const getSummaryMusic = async (idArt) => {
+  try {
+    const consulta1 = await db.query(
+      `SELECT id_alb, nombre_alb, numpistas_alb, fecha_alb, nombre_gen
+      FROM albumes INNER JOIN generos USING(id_gen)
+      WHERE id_art = $1
+      ORDER BY numpistas_alb`,
+      [idArt]
+    );
+
+    const albumes = consulta1.rows;
+    for (const album of albumes) {
+      const consulta2 = await db.query(
+        `SELECT nombre_can, duracion_can, nropista_can
+        FROM canciones
+        WHERE id_alb = $1
+        ORDER BY nropista_can`,
+        [album.id_alb]
+      );
+      album.canciones = consulta2.rows;
+    }
+
+    return albumes;
+  } catch (e) {
+    console.log(e);
+  }
+};
+
 exports.getCardArt = getCardArt;
 exports.getPlans = getPlans;
 exports.getSuscriptions = getSuscriptions;
@@ -679,3 +732,4 @@ exports.getMusicPDF = getMusicPDF;
 exports.getBillReport = getBillReport;
 exports.getBillPDF = getBillPDF;
 exports.getDefaultBillReport = getDefaultBillReport;
+exports.getSummaryMusic = getSummaryMusic;

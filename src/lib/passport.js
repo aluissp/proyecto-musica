@@ -10,8 +10,10 @@ passport.use('local.signin', new LocalStrategy({
 
     const consultaArt = await db.query('SELECT * FROM artistas WHERE email_art = $1', [mail]);
     const consultaUs = await db.query('SELECT * FROM usuarios WHERE email_usu = $1', [mail]);
+    const consultaAdmin = await db.query('SELECT * FROM administradores WHERE email_usu = $1',[mail]);
     const rowsArt = consultaArt.rows;
     const rowsUs = consultaUs.rows;
+    const rowsAdmin = consultaAdmin.rows;
     // Artistas
     if (rowsArt.length > 0) {
         const art = rowsArt[0];
@@ -26,6 +28,15 @@ passport.use('local.signin', new LocalStrategy({
         if (us.contrasena_usu === password) {
             us.id = us.id_usu;
             done(null, us, req.flash('success', 'Bienvenido ' + us.nombre_usu));
+        } else {
+            done(null, false, req.flash('message', 'Contraseña invalida'));
+        }
+
+    } else if (rowsAdmin.length > 0) {
+        const admin = rowsAdmin[0];
+        if (admin.contrasena_usu === password){
+            admin.id = admin.id_adm;
+            done(null, admin, req.flash('success', `Bienvenido `+ admin.nombres));
         } else {
             done(null, false, req.flash('message', 'Contraseña invalida'));
         }
@@ -100,10 +111,12 @@ passport.serializeUser((user, done) => {
 passport.deserializeUser(async (id, done) => {
     const consultaArt = await db.query('SELECT * FROM artistas WHERE id_art = $1', [id]);
     const consultaUs = await db.query('SELECT * FROM usuarios WHERE id_usu = $1', [id]);
+    const consultaAdmin = await db.query('SELECT * FROM administradores WHERE id_adm = $1', [id]);
     const rowsArt = consultaArt.rows;
     const rowsUs = consultaUs.rows;
+    const rowsAdmin = consultaAdmin.rows;
 
- if (rowsArt.length > 0) {
+    if (rowsArt.length > 0) {
         rowsArt[0].isArt = true;
         // console.log(rowsArt);
         done(null, rowsArt[0]);
@@ -111,5 +124,8 @@ passport.deserializeUser(async (id, done) => {
         rowsUs[0].isUsu = true;
         // console.log(rowsUs);
         done(null, rowsUs[0]);
+    } else if (rowsAdmin.length > 0){
+        rowsAdmin[0].isAdmin = true;
+        done(null, rowsAdmin[0]);
     }
 });
