@@ -3,6 +3,7 @@ const router = express.Router();
 const passport = require('passport');
 const { isLoggedIn, isNotLoggedIn } = require('../lib/auth');
 const { getSummaryMusic } = require('../lib/suscription');
+const { getLatestSub } = require('../lib/adminManagement');
 // ARTISTAS
 // Autenticacion
 router.route('/signup/artist')
@@ -17,12 +18,14 @@ router.route('/signup/artist')
 
 router.route('/home')
     .get(isLoggedIn, async (req, res) => {
-        const albumes = await getSummaryMusic(req.user.id_art);
         const info = {};
 
         if (req.user.isArt) {
-            info.albumes = albumes;
+            info.albumes = await getSummaryMusic(req.user.id_art);
+        } else if (req.user.isAdmin) {
+            info.response = await getLatestSub();
         }
+
         res.render('home', info);
     });
 

@@ -12,6 +12,9 @@
               Bienvenido
               {{user.nombres}}
             {{/if}}
+            {{#if user.isAdmin}}
+              Bienvenido {{user.nombres}} {{user.apellidos}}
+            {{/if}}
           </h3>
         </div>
       </div>
@@ -22,6 +25,9 @@
       <div class='card border-primary p-4'>
         {{#if user.isArt}}
           {{> summaryArt}}
+        {{/if}}
+        {{#if user.isAdmin}}
+          {{> summaryAdmin}}
         {{/if}}
 
       </div>

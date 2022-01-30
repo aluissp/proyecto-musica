@@ -1,0 +1,152 @@
+<div class='container'>
+
+  <div class='row col-12 card border-primary mx-auto mt-3'>
+    <form
+      class='mt-0 d-flex justify-content-between'
+      method='POST'
+      id='filters-art'
+    >
+      <div class='col-8 px-auto d-flex align-items-center'>
+        <div class='col-6 d-flex border border-white rounded py-3 mr-1'>
+          <div class='col-3 px-0 mr-0 d-flex align-items-center'>
+            <label class='font-weight-bold text-info mr-3'>Filtros</label>
+          </div>
+          <div class='col-9 px-0'>
+
+            <input
+              type='radio'
+              name='filtros'
+              value='artistas'
+              class='mx-1'
+              id='admin-art'
+              checked
+            />
+            <label class='mb-0'>artistas</label>
+            <input
+              type='radio'
+              name='filtros'
+              value='suscripciones'
+              class='mx-1'
+              id='admin-plan'
+            />
+            <label class='mb-0'>suscripciones</label>
+            <div class='row d-flex mx-1'>
+              <input
+                class='form-control d-none'
+                list='list-art'
+                name='albumfilter'
+                id='albumfilter'
+              />
+              <datalist id='list-art'>
+                {{#each albumes}}
+                  <option value='{{nombre_alb}}'></option>
+                {{/each}}
+              </datalist>
+            </div>
+          </div>
+        </div>
+        <div class='col-6 border d-flex border-white rounded py-3 ml-1'>
+          <div class='col-4 px-0 mr-0 d-flex align-items-center'>
+            <label class='font-weight-bold text-info mr-3'>Ordenar por</label>
+          </div>
+          <div class='col-8 px-0'>
+
+            <input
+              type='radio'
+              name='ordenar'
+              value='fecha_alb'
+              id='order1'
+              class='mx-1'
+              checked
+            />
+            <label class='mb-0 mr-5 pr-3' id='lb1'>Nombre artístico</label>
+            <input
+              type='radio'
+              name='ordenar'
+              value='precio_alb'
+              class='mx-1'
+              id='order2'
+              disabled
+            />
+            <label class='mb-0' id='lb2'>Fecha de compra</label>
+          </div>
+        </div>
+      </div>
+      <div class='col-4 px-auto py-0'>
+        <input
+          class='form-control mt-3'
+          name='wordkey'
+          placeholder='Ingrese el nombre artístico a filtrar'
+        />
+        <div class='row py-2'>
+          <div class='col-5'>
+            <input
+              type='radio'
+              name='ordenar2'
+              value='ASC'
+              class='mx-1'
+              checked
+            />
+            <label class='mb-0'>Ascendente</label>
+            <input type='radio' name='ordenar2' value='DESC' class='mx-1' />
+            <label class='mb-0'>Descendente</label>
+          </div>
+          <div class='col-7 d-flex justify-content-end'>
+            <button
+              class='btn btn-outline-danger mx-1 d-flex align-items-center'
+              type='submit'
+              id='music-pdf'
+            >
+              PDF
+              <i class='far fa-file-pdf ml-1'></i>
+            </button>
+            <button
+              class='btn btn-outline-info ml-1'
+              type='submit'
+              id='music-search'
+            >
+              Buscar
+              <i class='fas fa-search'></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </form>
+
+    <!-- Table -->
+
+    <table class='table table-striped' id='table'>
+      <thead>
+        <tr>
+          {{#each headerTable}}
+            <th scope='col'>{{column_name}}</th>
+          {{/each}}
+          <th></th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {{#each report}}
+          <tr>
+            <td>{{nombre_alb}}</td>
+            <td>{{numpistas_alb}}</td>
+            <td>{{precio_alb}}</td>
+            <td>{{dateFormat fecha_alb}}</td>
+            <td>{{nombre_gen}}</td>
+            <td></td>
+          </tr>
+        {{/each}}
+
+        {{#each reportSong}}
+          <tr>
+            <td>{{nombre_can}}</td>
+            <td>{{nropista_can}}</td>
+            <td>{{nombre_gen}}</td>
+            <td>{{duracion_can}}</td>
+            <td></td>
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+</div>

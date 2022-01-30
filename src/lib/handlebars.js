@@ -1,5 +1,4 @@
-const { format } = require("timeago.js");
-const { db } = require("../conexion");
+const { format } = require('timeago.js');
 // const dateFormat = require('handlebars-dateformat');
 
 const helpers = {};
@@ -12,7 +11,14 @@ helpers.dateFormat = (date) => {
   dia = date.getDate();
   mes = parseInt(date.getMonth()) + 1;
   anio = date.getFullYear();
-  return `${dia < 10 ? "0" + dia : dia}/${mes < 10 ? "0" + mes : mes}/${anio}`;
+  return `${dia < 10 ? '0' + dia : dia}/${mes < 10 ? '0' + mes : mes}/${anio}`;
+};
+
+helpers.dateInputFormat = (date) => {
+  dia = date.getDate();
+  mes = parseInt(date.getMonth()) + 1;
+  anio = date.getFullYear();
+  return `${anio}-${mes < 10 ? '0' + mes : mes}-${dia < 10 ? '0' + dia : dia}`;
 };
 
 helpers.coinFormat = (coin) => {
@@ -20,7 +26,7 @@ helpers.coinFormat = (coin) => {
 };
 
 helpers.firstPlan = (idPlan) => {
-  return idPlan === "pl-1";
+  return idPlan === 'pl-1';
 };
 
 module.exports = helpers;
