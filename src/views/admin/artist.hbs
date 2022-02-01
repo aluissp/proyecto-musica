@@ -4,10 +4,10 @@
     <form
       class='mt-0 d-flex justify-content-between'
       method='POST'
-      id='filters-art'
+      id='form-admin'
     >
       <div class='col-8 px-auto d-flex align-items-center'>
-        <div class='col-6 d-flex border border-white rounded py-3 mr-1'>
+        <div class='col-6 d-flex border border-white rounded pt-3 pb-2 mr-1'>
           <div class='col-3 px-0 mr-0 d-flex align-items-center'>
             <label class='font-weight-bold text-info mr-3'>Filtros</label>
           </div>
@@ -31,17 +31,19 @@
             />
             <label class='mb-0'>suscripciones</label>
             <div class='row d-flex mx-1'>
-              <input
-                class='form-control d-none'
-                list='list-art'
-                name='albumfilter'
-                id='albumfilter'
-              />
-              <datalist id='list-art'>
-                {{#each albumes}}
-                  <option value='{{nombre_alb}}'></option>
+              <select class='custom-select' name='id_art' id='list-art'>
+                <option value='none' selected>Elija un artista</option>
+                {{#each artList}}
+                  <option value='{{id_art}}'>{{seudonimo_art}}</option>
                 {{/each}}
-              </datalist>
+              </select>
+              <select class='custom-select d-none' name='id_pl' id='list-plan'>
+                <option value='none' selected>Elija un plan</option>
+                {{#each planList}}
+                  <option value='{{id_pl}}'>{{nombre_pl}}</option>
+                {{/each}}
+              </select>
+
             </div>
           </div>
         </div>
@@ -54,7 +56,7 @@
             <input
               type='radio'
               name='ordenar'
-              value='fecha_alb'
+              value='seudonimo_art'
               id='order1'
               class='mx-1'
               checked
@@ -63,7 +65,7 @@
             <input
               type='radio'
               name='ordenar'
-              value='precio_alb'
+              value='finico_sus'
               class='mx-1'
               id='order2'
               disabled
@@ -95,7 +97,7 @@
             <button
               class='btn btn-outline-danger mx-1 d-flex align-items-center'
               type='submit'
-              id='music-pdf'
+              id='admin-pdf'
             >
               PDF
               <i class='far fa-file-pdf ml-1'></i>
@@ -103,7 +105,7 @@
             <button
               class='btn btn-outline-info ml-1'
               type='submit'
-              id='music-search'
+              id='admin-search'
             >
               Buscar
               <i class='fas fa-search'></i>
@@ -118,35 +120,105 @@
     <table class='table table-striped' id='table'>
       <thead>
         <tr>
-          {{#each headerTable}}
-            <th scope='col'>{{column_name}}</th>
-          {{/each}}
-          <th></th>
+
+          {{#unless headerSub}}
+            <th></th>
+            <th></th>
+            {{#each headerTable}}
+              <th scope='col'>{{column_name}}</th>
+            {{/each}}
+          {{else}}
+            {{#each headerSub}}
+              <th scope='col'>{{column_name}}</th>
+            {{/each}}
+
+          {{/unless}}
         </tr>
       </thead>
 
       <tbody>
-        {{#each report}}
+        {{#each reportArt}}
           <tr>
-            <td>{{nombre_alb}}</td>
-            <td>{{numpistas_alb}}</td>
-            <td>{{precio_alb}}</td>
-            <td>{{dateFormat fecha_alb}}</td>
-            <td>{{nombre_gen}}</td>
+            {{#unless ../headerSub}}
             <td></td>
+            <td></td>
+            <td>{{nro}}</td>
+            <td>{{seudonimo_art}}</td>
+            <td>{{email_art}}</td>
+            <td>{{pais_art}}</td>
+            <td>
+              <a
+                class='btn btn-outline-danger'
+                type='submit'
+                href="/admin/art/pdf/{{email_art}}"
+              >
+               Generar PDF
+                <i class='far fa-file-pdf ml-1'></i>
+              </a>
+            {{else}}
+            <td>{{nro}}</td>
+            <td>{{orden}}</td>
+            <td>{{seudonimo_art}}</td>
+            <td>{{dateFormat finico_sus}}</td>
+            <td>{{dateFormat ffin_sus}}</td>
+            <td>{{coinFormat subtotal_sus}}</td>
+            <td>{{coinFormat iva_sus}}</td>
+            <td>{{coinFormat total_sus}}</td>
+
+            {{/unless}}
+            </td>
           </tr>
         {{/each}}
 
-        {{#each reportSong}}
-          <tr>
-            <td>{{nombre_can}}</td>
-            <td>{{nropista_can}}</td>
-            <td>{{nombre_gen}}</td>
-            <td>{{duracion_can}}</td>
-            <td></td>
-          </tr>
-        {{/each}}
       </tbody>
     </table>
   </div>
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Label filtros
+    const rdArt = document.getElementById('admin-art');
+    const rdSub = document.getElementById('admin-plan');
+
+    const listArt = document.getElementById('list-art');
+    const listPlan = document.getElementById('list-plan');
+
+    //Form
+    const form = document.getElementById('form-admin');
+
+    // Label ordenar por
+    const rdOrder1 = document.getElementById('order1');
+    const rdOrder2 = document.getElementById('order2');
+
+    const onClickAction = (option) => {
+      listArt.classList.add('d-none');
+      listPlan.classList.add('d-none');
+
+      rdOrder1.removeAttribute('disabled');
+      rdOrder2.removeAttribute('disabled');
+
+      if (option === '1'){
+        listArt.classList.remove('d-none');
+        rdOrder2.setAttribute('disabled', '');
+      } else if (option === '2') {
+        listPlan.classList.remove('d-none');
+      }
+
+    }
+    rdArt.onclick = () => onClickAction('1');
+    rdSub.onclick = () => onClickAction('2');
+
+    // PDF y Search
+    const btnSearch = document.getElementById('admin-search');
+    const btnPdf = document.getElementById('admin-pdf');
+
+    btnSearch.onclick = () => {
+      form.setAttribute('action', '/admin/art');
+    }
+
+    btnPdf.onclick = () => {
+      form.setAttribute('action', '/admin/art/pdf');
+    }
+  });
+</script>
