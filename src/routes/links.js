@@ -2,7 +2,7 @@ const express = require('express'); // Importamos la libreria
 const router = express.Router();
 const { db } = require('../conexion');
 const { whitPlan } = require('../lib/auth');
-
+const { getAllPlan } = require('../lib/adminManagement');
 // RUTAS SOLO DE ARTISTAS
 // CRUD ALBUM
 router.route('/addmusic')
@@ -129,6 +129,10 @@ router.route('/addmusic/music/edit/:idMusic')
         res.redirect(`/home/addmusic/music/${idAlbum}`);
     });
 
+router.route('/planes').get(async (req, res) => {
+    const planes = await getAllPlan();
+    res.render('artist/plan', { planes });
+});
 /*    Tabla «public.canciones»
     Columna    |          Tipo          | Ordenamiento | Nulable  | Por omisión
  --------------+------------------------+--------------+----------+-------------

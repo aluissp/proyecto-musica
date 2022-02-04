@@ -1,0 +1,48 @@
+<div class='container'>
+
+  {{! Cuerpo de la pagina }}
+  <div class='row col-12 card border-primary mx-auto mt-3 p-4'>
+
+    <div class='row mb-2'>
+      <div class='col-12'>
+        <div class='d-flex justify-content-center'>
+          <p class='h3 text-warning'>Todos los planes</p>
+        </div>
+
+      </div>
+    </div>
+
+    <div class='row justify-content-center'>
+      {{#each planes}}
+        <div class='card mb-3 col-5 bg-primary mx-2' id='{{id_pl}}'>
+          <div class='card-body'>
+            <h4 class='card-title fw-bolder'>{{nombre_pl}}</h4>
+          </div>
+          <div class='card-body'>
+            <p class='card-text'>{{descripcion_pl}}</p>
+          </div>
+          <ul class='list-group list-group-flush'>
+            <li
+              class='list-group-item bg-primary border-white'
+              aux='{{precio_pl}}'
+            >El precio es:
+              {{coinFormat precio_pl}}</li>
+            <li
+              class='list-group-item bg-primary border-white'
+              aux='{{duracion_pl}}'
+            >La duración es:
+              {{duracion_pl}}
+              días</li>
+          </ul>
+          <div class='card-body'>
+            <a href='/profile/art/3' class='btn btn-info mx-1'>Comprar plan
+              <i class='fas fa-shopping-cart'></i>
+            </a>
+          </div>
+        </div>
+      {{/each}}
+
+    </div>
+
+  </div>
+</div>

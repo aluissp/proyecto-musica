@@ -1,4 +1,5 @@
 <div class='container p-4'>
+  {{#unless user.isUsu}}
   <div class='row'>
     <div class='col-12 mx-auto'>
       <div class='card text-center border-primary'>
@@ -7,10 +8,6 @@
             {{#if user.isArt}}
               Bienvenido
               {{user.seudonimo_art}}
-            {{/if}}
-            {{#if user.isUsu}}
-              Bienvenido
-              {{user.nombres}}
             {{/if}}
             {{#if user.isAdmin}}
               Bienvenido {{user.nombres}} {{user.apellidos}}
@@ -33,4 +30,7 @@
       </div>
     </div>
   </div>
+  {{else}}
+    {{> beginning}}
+  {{/unless}}
 </div>

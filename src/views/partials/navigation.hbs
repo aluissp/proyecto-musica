@@ -33,13 +33,17 @@
               <a class='nav-link' href='/profile/report'>Reportes</a>
             </li>
             <li class='nav-item'>
-              <a class='nav-link' href='/home/addmusic'>Gestionar albumes</a>
+              <a class='nav-link' href='/home/addmusic'>Gestionar albumes
+                <i class='fas fa-compact-disc ml-1'></i>
+              </a>
             </li>
             <li class='nav-item'>
-              <a class='nav-link' href='#'>Planes</a>
+              <a class='nav-link' href='/home/planes'>Planes</a>
             </li>
             <li class='nav-item'>
-              <a class='nav-link' href='/profile/art'>Perfil</a>
+              <a class='nav-link' href='/profile/art'>Perfil
+                <i class='fas fa-user-circle ml-1'></i>
+              </a>
             </li>
             <li class='nav-item'>
               <a class='nav-link' href='/logout'>Cerrar Sesion</a>
@@ -62,7 +66,9 @@
                 data-bs-toggle='dropdown'
                 href='#'
                 role='button'
-              >Cuenta</a>
+              >Cuenta
+                <i class='fas fa-user-circle ml-1'></i>
+              </a>
 
               <div class='dropdown-menu' data-bs-popper='none'>
                 <a class='dropdown-item' href='/admin'>Perfil</a>
@@ -73,6 +79,27 @@
               </div>
             </li>
 
+            <li class='nav-item'>
+              <a class='nav-link' href='/logout'>Cerrar Sesion</a>
+            </li>
+          {{/if}}
+
+          {{#if user.isUsu}}
+            <li class='nav-item'>
+              <a class='nav-link' href='#'>Explorar
+                <i class='fas fa-list-ul ml-1'></i>
+              </a>
+            </li>
+            <li class='nav-item'>
+              <a class='nav-link' href='#'>Facturas
+                <i class='fas fa-file-invoice-dollar ml-1'></i>
+              </a>
+            </li>
+            <li class='nav-item'>
+              <a class='nav-link' href='#'>Perfil
+                <i class='fas fa-user-circle ml-1'></i>
+              </a>
+            </li>
             <li class='nav-item'>
               <a class='nav-link' href='/logout'>Cerrar Sesion</a>
             </li>
