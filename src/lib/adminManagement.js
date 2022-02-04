@@ -276,6 +276,150 @@ const getAllPlan = async () => {
   }
 };
 
+const insertPlan = async (req, nombre, descripcion, precio, duracion) => {
+  try {
+    const data = [nombre, descripcion, precio, duracion];
+    await db.query(
+      `INSERT INTO planes(nombre_pl, descripcion_pl, precio_pl, duracion_pl)
+       VALUES($1, $2, $3,$4)`,
+      data
+    );
+    req.flash('messageAdmin', 'Se creo correctamente el plan');
+  } catch (e) {
+    console.log(e);
+    req.flash('messageAdminFail', 'No se pudo crear el plan');
+  }
+};
+
+const deletePlan = async (req, idPlan) => {
+  try {
+    await db.query(`DELETE FROM planes WHERE id_pl = $1`, [idPlan]);
+    req.flash('messageAdmin', 'Se elimino correctamente el plan');
+  } catch (e) {
+    console.log(e);
+    req.flash(
+      'messageAdminFail',
+      'No se pudo eliminar el plan, plan ya tiene registros'
+    );
+  }
+};
+
+const updatePlan = async (
+  req,
+  nombre,
+  descripcion,
+  precio,
+  duracion,
+  idPlan
+) => {
+  try {
+    const data = [nombre, descripcion, precio, duracion, idPlan];
+    await db.query(
+      `UPDATE planes SET nombre_pl = $1, descripcion_pl = $2,
+      precio_pl = $3, duracion_pl = $4 WHERE id_pl = $5`,
+      data
+    );
+    req.flash('messageAdmin', 'Se actualizo correctamente el plan');
+  } catch (e) {
+    console.log(e);
+    req.flash('messageAdminFail', 'No se pudo actualizar el plan');
+  }
+};
+
+const updatePerfil = async (
+  req,
+  idAdm,
+  nombre,
+  apellido,
+  genero,
+  fnacimiento
+) => {
+  try {
+    const data = [nombre, apellido, genero, fnacimiento, idAdm];
+    await db.query(
+      `UPDATE administradores SET nombres = $1, apellidos = $2,
+       genero = $3, fecha_nacim = $4
+       WHERE id_adm = $5`,
+      data
+    );
+
+    req.flash('messageAdmin', 'Se actualizo correctamente el perfil');
+  } catch (e) {
+    console.log(e);
+    req.flash('messageAdminFail', 'No se pudo actualizar el perfil');
+  }
+};
+
+const updatePass = async (req, id, newPass, confirmPass) => {
+  try {
+    if (newPass === confirmPass) {
+      await db.query(
+        `UPDATE administradores
+        SET	contrasena_usu = $1
+        WHERE id_adm = $2`,
+        [newPass, id]
+      );
+      req.flash('messageAdmin', 'Se actualizó correctamente el contraseña');
+    } else {
+      req.flash(
+        'messageAdminFail',
+        'La contraseña debe coincidir para actualizarlo'
+      );
+    }
+  } catch (e) {
+    console.log(e);
+    req.flash(
+      'messageAdminFail',
+      'Ocurrió en error al actualizar la contraseña'
+    );
+  }
+};
+
+const newAdmin = async (
+  req,
+  nombre,
+  apellido,
+  genero,
+  fnacimiento,
+  mail,
+  pass
+) => {
+  try {
+    const edad = calcularEdad(fnacimiento);
+    if (genero === 'none') {
+      req.flash('messageAdminFail', 'Debe eligir un genero valido!');
+    } else if (pass.length < 8) {
+      req.flash(
+        'messageAdminFail',
+        'La contraseña debe tener al menos 8 caracteres!'
+      );
+    } else if (edad < 18) {
+      req.flash(
+        'messageAdminFail',
+        'El nuevo administrador debe ser mayor de edad!'
+      );
+    } else {
+      const data = [nombre, apellido, genero, fnacimiento, mail, pass];
+      await db.query(
+        `INSERT INTO administradores(
+          nombres, apellidos, genero, fecha_nacim, email_usu, contrasena_usu)
+          VALUES ($1, $2, $3, $4, $5, $6)`,
+        data
+      );
+      req.flash(
+        'messageAdmin',
+        'Se registro correctamente el nuevo administrador'
+      );
+    }
+  } catch (e) {
+    console.log(e);
+    req.flash(
+      'messageAdminFail',
+      'El ocurrio un error al registrar administrador !'
+    );
+  }
+};
+
 const dateFormat = (date) => {
   dia = date.getDate();
   mes = parseInt(date.getMonth()) + 1;
@@ -287,8 +431,26 @@ const coinFormat = (coin) => {
   return `$ ${coin.toFixed(2)}`;
 };
 
+const calcularEdad = (fecha) => {
+  var hoy = new Date();
+  var cumpleanos = new Date(fecha);
+  var edad = hoy.getFullYear() - cumpleanos.getFullYear();
+  var m = hoy.getMonth() - cumpleanos.getMonth();
+
+  if (m < 0 || (m === 0 && hoy.getDate() < cumpleanos.getDate())) {
+    edad--;
+  }
+
+  return edad;
+};
 exports.getLatestSub = getLatestSub;
 exports.getArtistFilter = getArtistFilter;
 exports.getArtistPdf = getArtistPdf;
 exports.getArtistReport = getArtistReport;
 exports.getAllPlan = getAllPlan;
+exports.insertPlan = insertPlan;
+exports.deletePlan = deletePlan;
+exports.updatePlan = updatePlan;
+exports.updatePerfil = updatePerfil;
+exports.updatePass = updatePass;
+exports.newAdmin = newAdmin;

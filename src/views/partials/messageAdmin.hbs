@@ -1,0 +1,32 @@
+{{! MENSAJES ADMIN}}
+{{#if messageAdmin}}
+
+  <!-- Alerta -->
+  <div class='alert alert-success col-12' role='alert' id='alert'>
+    {{messageAdmin}}
+    <button
+      type='button'
+      class='close'
+      data-bs-dismiss='alert'
+      aria-label='Close'
+    >
+      <span aria-hidden='true'>&times;</span>
+    </button>
+  </div>
+{{/if}}
+
+{{#if messageAdminFail}}
+
+  <!-- Alerta -->
+  <div class='alert alert-danger col-12' role='alert' id='alert'>
+    {{messageAdminFail}}
+    <button
+      type='button'
+      class='close'
+      data-bs-dismiss='alert'
+      aria-label='Close'
+    >
+      <span aria-hidden='true'>&times;</span>
+    </button>
+  </div>
+{{/if}}

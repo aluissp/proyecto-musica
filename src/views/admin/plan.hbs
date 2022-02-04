@@ -15,9 +15,10 @@
           </button>
 
         </div>
+      <form method="POST" id="formEdit">
         <div class='modal-body'>
           <div class="card border-primary">
-            <form method="POST" class="d-flex" id="formEdit">
+            <div class="d-flex">
               <div class="col-5">
                 <h5 class="my-3">Nombre del plan</h5>
                 <h5 class="my-3">Descripción</h5>
@@ -26,23 +27,24 @@
               </div>
 
               <div class="col-7">
-                <input type="text" id="m-nombre" class="form-control my-2">
-                <input type="text" id="m-descripcion" class="form-control my-2">
+                <input type="text" id="m-nombre" name="nombre" class="form-control my-2">
+                <input type="text" id="m-descripcion" name="descripcion" class="form-control my-2">
                 <input type="number" id="m-precio" name="precio" class="form-control" placeholder="0.00" step="0.01"
                 required>
-                <input type="number" id="m-dias" class="form-control my-2">
+                <input type="number" id="m-dias" name="duracion" class="form-control my-2">
               </div>
-            </form>
+            </div>
           </div>
         </div>
         <div class='modal-footer'>
-          <button type='submmit' class='btn btn-primary'>Guardar cambios</button>
+          <button type='submit' class='btn btn-primary'>Guardar cambios</button>
           <button
             type='button'
             class='btn btn-secondary'
             data-bs-dismiss='modal'
           >Cerrar</button>
         </div>
+      </form>
       </div>
     </div>
   </div>
@@ -63,34 +65,37 @@
           </button>
 
         </div>
-        <div class='modal-body'>
-          <div class="card border-primary">
-            <form method="POST" class="d-flex" id="formEdit">
-              <div class="col-5">
-                <h5 class="my-3">Nombre del plan</h5>
-                <h5 class="my-3">Descripción</h5>
-                <h5 class="my-3">Precio</h5>
-                <h5 class="my-3">Duración</h5>
-              </div>
+        <form method="POST" action="/admin/planes">
+          <div class='modal-body'>
+            <div class="card border-primary">
+              <div class="d-flex">
 
-              <div class="col-7">
-                <input type="text" id="m-nombre" class="form-control my-2">
-                <input type="text" id="m-descripcion" class="form-control my-2">
-                <input type="number" id="m-precio" name="precio" class="form-control" placeholder="0.00" step="0.01"
-                required>
-                <input type="number" id="m-dias" class="form-control my-2">
+                <div class="col-5">
+                  <h5 class="my-3">Nombre del plan</h5>
+                  <h5 class="my-3">Descripción</h5>
+                  <h5 class="my-3">Precio</h5>
+                  <h5 class="my-3">Duración</h5>
+                </div>
+
+                <div class="col-7">
+                  <input type="text" name="nombre" class="form-control my-2">
+                  <input type="text" name="descripcion" class="form-control my-2">
+                  <input type="number" name="precio" class="form-control" placeholder="0.00" step="0.01"
+                  required>
+                  <input type="number" name="duracion" class="form-control my-2">
+                </div>
               </div>
-            </form>
+            </div>
           </div>
-        </div>
-        <div class='modal-footer'>
-          <button type='submmit' class='btn btn-primary'>Guardar cambios</button>
-          <button
-            type='button'
-            class='btn btn-secondary'
-            data-bs-dismiss='modal'
-          >Cerrar</button>
-        </div>
+          <div class='modal-footer'>
+            <button type='submit' class='btn btn-primary'>Crear plan</button>
+            <button
+              type='button'
+              class='btn btn-secondary'
+              data-bs-dismiss='modal'
+            >Cerrar</button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
@@ -119,7 +124,7 @@
   {{! Cuerpo de la pagina }}
   <div class='row col-12 card border-primary mx-auto mt-3 p-4'>
 
-    <div class='row'>
+    <div class='row mb-2'>
       <div class='col-6'>
         <div class='d-flex justify-content-center'>
           <p class='h3 text-warning'>Todos los planes</p>
@@ -127,12 +132,17 @@
 
       </div>
       <div class='col-6'>
-        <div class='d-flex justify-content-end'>
-          <button class='btn btn-outline-warning'
+        <div class='d-flex justify-content-end pr-3'>
+          <button class='btn btn-outline-warning mr-5'
               data-bs-toggle='modal'
               data-bs-target='#newPlan'>
             <p class='h5 m-0'>Crear nuevo Plan</p>
           </button>
+        </div>
+      </div>
+      <div class="col-11 mx-5 px-5">
+        <div class='d-flex justify-content-end'>
+          {{> messageAdmin}}
         </div>
       </div>
     </div>
@@ -207,13 +217,13 @@
           inDescripcion.value = descripcion;
           inPrecio.value = precio;
           inDias.value = duracion;
-          form.setAttribute('action', `/admin/plan/edit/${id}`);
+          form.setAttribute('action', `/admin/planes/edit/${id}`);
         }
       }
 
       if (btnDelete) {
         btnDelete.onclick = () => {
-          btnModalDelete.setAttribute('href', `/admin/plan/delete/${id}`);
+          btnModalDelete.setAttribute('href', `/admin/planes/delete/${id}`);
         }
       }
     }
