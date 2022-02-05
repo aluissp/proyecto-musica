@@ -1,0 +1,290 @@
+{{! Editar tarjeta }}
+<div
+  class='modal fade'
+  id='modal'
+  tabindex='-1'
+  role='dialog'
+  aria-labelledby='exampleModalCenterTitle'
+  aria-hidden='true'
+>
+  <div class='modal-dialog modal-dialog-centered modal-lg' role='document'>
+    <div class='modal-content'>
+      <div class='modal-header'>
+        <h5 class='modal-title'>
+          Editar tarjeta
+        </h5>
+        <button
+          type='button'
+          class='close'
+          data-bs-dismiss='modal'
+          aria-label='Close'
+        >
+          <span aria-hidden='true'>&times;</span>
+        </button>
+      </div>
+      <div class='modal-body'>
+        <form id='form-edit-card' method='POST'>
+          <div class='row d-flex'>
+
+            <div class='mr-2 mb-3 col-3'>
+              <label>Tipo de tarjeta</label>
+              <label class='text-info'>
+                <input
+                  type='radio'
+                  id='tipoTarA'
+                  name='tipotarjetas'
+                  value='Tarjeta de debito'
+                />
+                Tarjeta de debito
+              </label>
+              <label class='text-info'>
+                <input
+                  type='radio'
+                  id='tipoTarB'
+                  name='tipotarjetas'
+                  value='Tarjeta de crédito'
+                />
+                Tarjeta de crédito
+              </label>
+
+            </div>
+            <div class='ml-2 col-4'>
+              <label>Numero de tarjeta</label>
+              <input
+                type='number'
+                class='form-control'
+                placeholder='1111112222222334'
+                name='nrotarjeta'
+                id='nro-tar'
+              />
+            </div>
+
+            <div class='ml-2 col-4'>
+              <label>Fecha de caducidad</label>
+              <input
+                type='date'
+                class='form-control'
+                name='fcaducidad'
+                id='fcad-tar'
+              />
+            </div>
+          </div>
+          <div class='row d-flex justify-content-end modal-footer'>
+            <button
+              type='button'
+              class='btn btn-secondary mx-3 px-4'
+              data-bs-dismiss='modal'
+            >
+              Cerrar
+            </button>
+            <button type='submit' class='btn btn-outline-info ml-3 mr-5 px-4'>
+              Guardar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{{! Eliminar tarjeta }}
+<div class='modal fade' tabindex='-1' id='eliminar'>
+  <div class='modal-dialog'>
+    <div class='modal-content'>
+      <div class='modal-header'>
+        <h5 class='modal-title'>Eliminar tarjeta</h5>
+        <button
+          type='button'
+          class='close'
+          data-bs-dismiss='modal'
+          aria-label='Close'
+        >
+          <span aria-hidden='true'>&times;</span>
+        </button>
+      </div>
+      <div class='modal-body'>
+        <p>Esta seguro que quiere eliminar esta tarjeta?</p>
+      </div>
+      <div class='modal-footer'>
+        <button
+          type='button'
+          class='btn btn-primary'
+          data-bs-dismiss='modal'
+        >Cerrar</button>
+        <a class='btn btn-danger' id='modal-delete-card'>Eliminar</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class='container my-4'>
+  <h3>Añadir o editar tarjetas</h3>
+  <div class='row px-3'>
+    <h4 class='mt-2 px-0 col-12 text-success'>Información de la tarjeta</h4>
+    {{> messageUser}}
+  </div>
+  <form action='/user/card' method='POST' class='row col-12 p-3'>
+    <div class='mb-3 col-2'>
+      <label>Tipo de tarjeta</label>
+      <label class='text-info'>
+        <input
+          type='radio'
+          name='tipotarjetas'
+          value='Tarjeta de debito'
+          checked=''
+        />
+        Tarjeta de debito
+      </label>
+      <label class='text-info'>
+        <input type='radio' name='tipotarjetas' value='Tarjeta de crédito' />
+        Tarjeta de crédito
+      </label>
+
+    </div>
+    <div class='ml-2 col-4'>
+      <label>Número de tarjeta</label>
+      <input
+        type='number'
+        class='form-control'
+        placeholder='1111112222222334'
+        name='nrotarjeta'
+      />
+    </div>
+
+    <div class='ml-2 col-4'>
+      <label>Fecha de caducidad</label>
+      <input type='date' class='form-control' name='fcaducidad' />
+    </div>
+    <div class='d-flex align-items-center mb-3'>
+      <button type='submit' class='btn btn-outline-info' id='btn-add-card'>
+        Añadir tarjeta
+      </button>
+    </div>
+  </form>
+
+
+
+  <h4 class='my-3 px-0 col-12 text-success'>Sus tarjetas</h4>
+
+  <div class='row mb-3'>
+    <h5 class='col-4'>Buscar</h5>
+    <div class='col-8'>
+      <form action='/user/search/card' method='POST'>
+
+        <div class='input-group'>
+          <input
+            type='text'
+            class='form-control'
+            name='wordkey'
+            placeholder='Ingresa el número de tarjeta que quieras buscar'
+            required
+          />
+          <button
+            class='btn btn-outline-info px-5'
+            type='submit'
+            id='button-addon2'
+          >
+            <i class='fas fa-search'></i>
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+  {{#if tarjetas}}
+    <table class='table table-striped' id='table-card'>
+
+        <thead>
+          <tr>
+            <th>
+              Tipo de tarjeta
+            </th>
+            <th scope='col'>Número de tarjeta
+              <i class="fas fa-credit-card ml-1"></i>
+            </th>
+            <th scope='col'>Fecha de expiración
+              <i class="fas fa-calendar-times ml-1"></i>
+            </th>
+            <th></th>
+          </tr>
+        </thead>
+      <tbody>
+        {{#each tarjetas}}
+          <tr id='{{id_tar}}'>
+            <td tipotaraux='{{tipo_tar}}'>
+              {{tipo_tar}}
+            </td>
+            <td nrotaraux='{{numero_tar}}'>
+              {{numero_tar}}
+            </td>
+            <td dateaux='{{dateFormat fcaducidad_tar}}'>
+              Expira el
+              {{dateFormat fcaducidad_tar}}
+            </td>
+            <td class='text-center'>
+              <button
+                class='btn btn-primary mb-1 ml-3'
+                data-bs-toggle='modal'
+                data-bs-target='#modal'
+              >
+                <i class='fas fa-pen'></i>
+              </button>
+              <button
+                class='btn btn-danger mb-1 ml-3'
+                data-bs-toggle='modal'
+                data-bs-target='#eliminar'
+              >
+                <i class='fas fa-trash-alt'></i>
+              </button>
+            </td>
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  {{/if}}
+
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const tabla = document.getElementById('table-card');
+        if (tabla) {
+            const modalDelete = document.getElementById('modal-delete-card');
+            const form = document.getElementById('form-edit-card');
+
+            const tarA = document.getElementById('tipoTarA');
+            const tarB = document.getElementById('tipoTarB');
+            const nroTarjeta = document.getElementById('nro-tar');
+            const fcad = document.getElementById('fcad-tar');
+
+            for (i = 1; i < tabla.rows.length; i++) {
+              // Atributos de cada row
+              const id = tabla.rows[i].getAttribute('id');
+              const tipoTarRow = tabla.rows[i].children[0].getAttribute('tipotaraux');
+              const nroTarRow = tabla.rows[i].children[1].getAttribute('nrotaraux');
+              const dateTarRow = tabla.rows[i].children[2].getAttribute('dateaux');
+
+              const btnEdit = tabla.rows[i].children[3].children[0];
+              const btnDelete = tabla.rows[i].children[3].children[1];
+
+              // console.log(id, tipoTarRow, nroTarRow, dateTarRow, btnEdit, btnDelete);
+              btnDelete.onclick = () => {
+                modalDelete.setAttribute('href', `/user/card/delete/${id}`);
+              }
+
+              btnEdit.onclick = () => {
+                tarA.removeAttribute('checked');
+                tarB.removeAttribute('checked');
+                if (tipoTarRow === 'Tarjeta de debito') {
+                    tarA.setAttribute('checked', "");
+                } else {
+                    tarB.setAttribute('checked', "");
+                }
+                const d = dateTarRow.split('/');
+                fcad.value = `${d[2]}-${d[1]}-${d[0]}`;
+                nroTarjeta.value = nroTarRow;
+                form.setAttribute('action', `/user/card/edit/${id}`);
+              }
+            }
+        }
+    });
+</script>

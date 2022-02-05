@@ -24,7 +24,7 @@ const {
   getDefaultBillReport,
 } = require('../lib/suscription');
 
-// TARJETAS
+// Perfil
 router
   .route('/art')
   .get(async (req, res) => {

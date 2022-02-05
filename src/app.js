@@ -65,6 +65,10 @@ app.use((req, res, next) => {
   // All message for artist
   app.locals.messageAdmin = req.flash('messageAdmin');
   app.locals.messageAdminFail = req.flash('messageAdminFail');
+
+  // All message for user
+  app.locals.messageUser = req.flash('messageUser');
+  app.locals.messageUserFail = req.flash('messageUserFail');
   app.locals.user = req.user;
   next();
 });

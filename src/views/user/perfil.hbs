@@ -1,1 +1,89 @@
-Perfil
+<div class='container card mt-4'>
+  <h3 class='ml-2 mt-2'>Tus datos personales</h3>
+  <div class='d-flex'>
+    <div class='col-6'>
+      {{! Formulario }}
+      <form action='/user' method='POST'>
+      {{> messageUser}}
+        <div class='row'>
+
+          <div class='col-6'>
+            <label class='form-label mt-4'>Nombre</label>
+            <input
+              type='text'
+              class='form-control'
+              placeholder='Ingresa tu nombre'
+              name='nombre'
+              value='{{user.nombres}}'
+            />
+          </div>
+          <div class='col-6'>
+            <label class='form-label mt-4'>Apellido</label>
+            <input
+              type='text'
+              class='form-control'
+              placeholder='Ingresa tu apellido'
+              name='apellido'
+              value='{{user.apellidos}}'
+            />
+          </div>
+        </div>
+
+        <div class='row mt-2'>
+          <div class='col-6'>
+            <label class='form-label'>Género</label>
+            <select class='custom-select' name='genero'>
+              <option value='none'>Elija un genero</option>
+              {{#each generos}}
+                <option value='{{valor}}' {{selected}}>{{valor}}</option>
+              {{/each}}
+            </select>
+
+          </div>
+          <div class='col-6'>
+            <label class='form-label'>Fecha de nacimiento</label>
+            <input
+              type='date'
+              class='form-control'
+              placeholder='Ingresa tu apellido'
+              name='fnacimiento'
+              value='{{dateInputFormat user.fecha_nacim}}'
+            />
+
+          </div>
+        </div>
+
+        <div class='row d-flex justify-content-end'>
+          <button
+            type='submit'
+            class='btn btn-outline-info mr-3 mt-2 mb-2'
+          >Guardar</button>
+        </div>
+      </form>
+    </div>
+
+    <div class='col-6'>
+      <form action='/user/pass' method="POST">
+        <div class='row pl-5'>
+
+          <label class='form-label mt-4'>Correo electrónico </label>
+          <input type='text' class='form-control' value="{{user.email_usu}}" disabled />
+          <label class='form-label mt-2'>Contraseña</label>
+          <input type='text' class='form-control' value="{{user.contrasena_usu}}" disabled />
+          <label class='form-label mt-3 text-warning'>Cambiar contraseña</label>
+          <input type='text' class='form-control' name='chPass' />
+          <label class='form-label mt-2 text-warning'>Confirmar contraseña</label>
+          <input type='text' class='form-control' name='confPass' />
+
+        </div>
+
+        <div class='row d-flex justify-content-end'>
+          <button type='submit' class='btn btn-outline-info mt-2 mb-2'>
+            Cambiar
+            <i class='fas fa-exchange-alt pl-2'></i>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

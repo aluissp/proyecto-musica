@@ -335,15 +335,22 @@ const updatePerfil = async (
   fnacimiento
 ) => {
   try {
-    const data = [nombre, apellido, genero, fnacimiento, idAdm];
-    await db.query(
-      `UPDATE administradores SET nombres = $1, apellidos = $2,
-       genero = $3, fecha_nacim = $4
-       WHERE id_adm = $5`,
-      data
-    );
+    const edad = calcularEdad(fnacimiento);
+    if (genero === 'none') {
+      req.flash('messageAdminFail', 'Debe eligir un genero valido!');
+    } else if (edad < 18) {
+      req.flash('messageAdminFail', 'Usted debe tener al menos 18 años!');
+    } else {
+      const data = [nombre, apellido, genero, fnacimiento, idAdm];
+      await db.query(
+        `UPDATE administradores SET nombres = $1, apellidos = $2,
+        genero = $3, fecha_nacim = $4
+        WHERE id_adm = $5`,
+        data
+      );
 
-    req.flash('messageAdmin', 'Se actualizo correctamente el perfil');
+      req.flash('messageAdmin', 'Se actualizo correctamente el perfil');
+    }
   } catch (e) {
     console.log(e);
     req.flash('messageAdminFail', 'No se pudo actualizar el perfil');
@@ -352,7 +359,12 @@ const updatePerfil = async (
 
 const updatePass = async (req, id, newPass, confirmPass) => {
   try {
-    if (newPass === confirmPass) {
+    if (newPass.length < 8) {
+      req.flash(
+        'messageAdminFail',
+        'La contraseña debe tener al menos 8 caracteres'
+      );
+    } else if (newPass === confirmPass) {
       await db.query(
         `UPDATE administradores
         SET	contrasena_usu = $1

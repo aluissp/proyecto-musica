@@ -151,6 +151,84 @@ const getFullAlbum = async (idAlb) => {
   }
 };
 
+const updatePerfil = async (
+  req,
+  idUser,
+  nombre,
+  apellido,
+  genero,
+  fnacimiento
+) => {
+  try {
+    const edad = calcularEdad(fnacimiento);
+    if (genero === 'none') {
+      req.flash('messageUserFail', 'Debe eligir un genero valido!');
+    } else if (edad < 18) {
+      req.flash(
+        'messageUserFail',
+        'Usted debe tener al menos 18 años!'
+      );
+    } else {
+      const data = [nombre, apellido, genero, fnacimiento, idUser];
+      await db.query(
+        `UPDATE usuarios SET nombres = $1, apellidos = $2,
+        genero = $3, fecha_nacim = $4
+        WHERE id_usu = $5`,
+        data
+      );
+
+      req.flash('messageUser', 'Se actualizo correctamente el perfil');
+    }
+  } catch (e) {
+    console.log(e);
+    req.flash('messageUserFail', 'No se pudo actualizar el perfil');
+  }
+};
+
+const updatePass = async (req, id, newPass, confirmPass) => {
+  try {
+    if (newPass.length < 8) {
+      req.flash(
+        'messageUserFail',
+        'La contraseña debe tener al menos 8 caracteres'
+      );
+    } else if (newPass === confirmPass) {
+      await db.query(
+        `UPDATE usuarios
+        SET	contrasena_usu = $1
+        WHERE id_usu = $2`,
+        [newPass, id]
+      );
+      req.flash('messageUser', 'Se actualizó correctamente el contraseña');
+    } else {
+      req.flash(
+        'messageUserFail',
+        'La contraseña debe coincidir para actualizarlo'
+      );
+    }
+  } catch (e) {
+    console.log(e);
+    req.flash(
+      'messageAdminFail',
+      'Ocurrió en error al actualizar la contraseña'
+    );
+  }
+};
+
+const calcularEdad = (fecha) => {
+  var hoy = new Date();
+  var cumpleanos = new Date(fecha);
+  var edad = hoy.getFullYear() - cumpleanos.getFullYear();
+  var m = hoy.getMonth() - cumpleanos.getMonth();
+
+  if (m < 0 || (m === 0 && hoy.getDate() < cumpleanos.getDate())) {
+    edad--;
+  }
+
+  return edad;
+};
 exports.exploreMusic = exploreMusic;
 exports.getFullArtist = getFullArtist;
 exports.getFullAlbum = getFullAlbum;
+exports.updatePerfil = updatePerfil;
+exports.updatePass = updatePass;
