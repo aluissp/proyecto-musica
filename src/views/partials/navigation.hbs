@@ -46,7 +46,9 @@
               </a>
             </li>
             <li class='nav-item'>
-              <a class='nav-link' href='/logout'>Cerrar Sesion</a>
+              <a class='nav-link' href='/logout'>Cerrar Sesión
+                <i class='fas fa-sign-out-alt ml-1'></i>
+              </a>
             </li>
           {{/if}}
 
@@ -80,28 +82,32 @@
             </li>
 
             <li class='nav-item'>
-              <a class='nav-link' href='/logout'>Cerrar Sesion</a>
+              <a class='nav-link' href='/logout'>Cerrar Sesión
+                <i class='fas fa-sign-out-alt ml-1'></i>
+              </a>
             </li>
           {{/if}}
 
           {{#if user.isUsu}}
             <li class='nav-item'>
-              <a class='nav-link' href='#'>Explorar
+              <a class='nav-link' href='/user/explore'>Explorar
                 <i class='fas fa-list-ul ml-1'></i>
               </a>
             </li>
             <li class='nav-item'>
-              <a class='nav-link' href='#'>Facturas
+              <a class='nav-link' href='/user/bill'>Facturas
                 <i class='fas fa-file-invoice-dollar ml-1'></i>
               </a>
             </li>
             <li class='nav-item'>
-              <a class='nav-link' href='#'>Perfil
+              <a class='nav-link' href='/user'>Perfil
                 <i class='fas fa-user-circle ml-1'></i>
               </a>
             </li>
             <li class='nav-item'>
-              <a class='nav-link' href='/logout'>Cerrar Sesion</a>
+              <a class='nav-link' href='/logout'>Cerrar Sesión
+                <i class='fas fa-sign-out-alt ml-1'></i>
+              </a>
             </li>
           {{/if}}
         </ul>
