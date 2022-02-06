@@ -1,3 +1,120 @@
+<!-- Comprar album -->
+{{! 1st }}
+<div class='modal fade' id='buy-modal-1'>
+  <div class='modal-dialog' role='document'>
+    <div class='modal-content'>
+      {{! Header }}
+      <div class='modal-header'>
+        <h5 class='modal-title'>
+          Comprar album
+        </h5>
+        <button
+          type='button'
+          class='close'
+          data-bs-dismiss='modal'
+          aria-label='Close'
+        >
+          <span aria-hidden='true'>&times;</span>
+        </button>
+      </div>
+      {{! Body }}
+      <div class='modal-body'>
+        <div class="d-flex">
+          <div class='col-4 mx-1 my-2 border border-light rounded-lg'>
+            <div class='row justify-content-center'>
+              <img src='/img/Logos/album2.png' alt='logo-album' width='130' />
+            </div>
+          </div>
+          <div class="col-7 my-2">
+            <h4 id='title-modal-alb'>Epicentro en vivo</h4>
+            <h5>
+              <small id='date-modal-alb' class="h5"></small>
+              <i class="fas fa-calendar-day ml-1"></i>
+            </h5>
+            <h5>Precio total:
+              <small id='price-modal-alb' class="h5 text-warning"></small>
+            </h5>
+            <h6 class="mt-4">
+              El precio total incluye el {{ivaFormat iva.valor_imp}} de iva
+            </h6>
+          </div>
+        </div>
+      </div>
+      {{! Footer }}
+      <div class='modal-footer'>
+        <button type='button' class='btn btn-secondary' data-bs-dismiss='modal'>
+          Cerrar
+        </button>
+        <button
+          class='btn btn-info'
+          data-bs-target='#buy-modal-2'
+          data-bs-toggle='modal'
+        >
+          Continuar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{{! 2st }}
+<div class='modal fade' id='buy-modal-2'>
+  <div class='modal-dialog' role='document'>
+    <form class='modal-content' method='POST' id="modal-buy">
+      {{! Header }}
+      <div class='modal-header'>
+        <h5 class='modal-title'>
+          Confirmar pago
+        </h5>
+        <button
+          type='button'
+          class='close'
+          data-bs-dismiss='modal'
+          aria-label='Close'
+        >
+          <span aria-hidden='true'>&times;</span>
+        </button>
+      </div>
+      {{! Body }}
+      <div class='modal-body'>
+        {{#if tarjetas}}
+          <div class='row mx-1 h6'>Elige una tarjeta para continuar con la
+            transacción</div>
+          <div class='row mx-1 align-items-center'>
+            <i class='fas fa-credit-card h1 col-3 pl-0 mb-0'></i>
+            {{! Card list }}
+            <select class='custom-select col-9' name='tarjeta'
+            id='list-card' required>
+              <option value=''>Elija una tarjeta</option>
+              {{#each tarjetas}}
+                <option value='{{numero_tar}}'>Tarjeta # {{numero_tar}}</option>
+              {{/each}}
+            </select>
+          </div>
+        {{else}}
+          <h3> No tienes registrado ninguna tarjeta!</h3>
+          <h4>Haz click <a href='/user/card'>aquí</a> para registrar uno</h4>
+        {{/if}}
+      </div>
+      {{! Footer }}
+      <div class='modal-footer'>
+        <button type='button' class='btn btn-secondary' data-bs-dismiss='modal'>
+          Cerrar
+        </button>
+        {{#unless tarjetas}}
+          <button type='submit' class='btn btn-info' disabled data-bs-dismiss='modal'>
+            Comprar
+          </button>
+        {{else}}
+          <button type='submit' class='btn btn-info' data-bs-dismiss='modal'>
+            Comprar
+          </button>
+        {{/unless}}
+      </div>
+    </form>
+  </div>
+</div>
+
 <div class='container my-4'>
   <div class='row justify-content-start border-bottom'>
 
@@ -45,10 +162,44 @@
               </a>
             </div>
             <div class='row p-1'>
-              <a class='btn btn-outline-warning container-fluid'>Comprar por
+            {{#unless ultimoLanzamiento.itsMine}}
+              <a
+                data-bs-toggle='modal'
+                href='#buy-modal-1'
+                class='btn btn-outline-warning container-fluid'
+                id='last-alb-buy'
+              >Comprar por
                 {{coinFormat ultimoLanzamiento.precio_alb}}
               </a>
+            {{else}}
+              <a
+               class='btn btn-outline-warning container-fluid'
+              >Album comprado!
+                <i class="fas fa-shopping-bag ml-1"></i>
+              </a>
+            {{/unless}}
             </div>
+            {{! Hidden inputs }}
+            <input
+              type='hidden'
+              value='{{ultimoLanzamiento.id_alb}}'
+              id='last-id'
+            />
+            <input
+              type='hidden'
+              value='{{ultimoLanzamiento.nombre_alb}}'
+              id='last-name'
+            />
+            <input
+              type='hidden'
+              value='{{dateFormat ultimoLanzamiento.fecha_alb}}'
+              id='last-date'
+            />
+            <input
+              type='hidden'
+              value='{{ultimoLanzamiento.precio_alb}}'
+              id='last-price'
+            />
           </div>
         {{/if}}
         <div class='col-5 mx-1 my-2'>
@@ -150,7 +301,7 @@
       <i class='fas fa-chevron-right ml-2'></i>
     </h4>
   </div>
-  <div class='row mb-3 border-bottom justify-content-star'>
+  <div class='row mb-3 border-bottom justify-content-star' id='all-album'>
     {{#if albumes}}
       {{#each albumes}}
         <div class='col-3 mx-4 my-2 border border-light rounded-lg'>
@@ -170,10 +321,31 @@
           </div>
 
           <div class='row p-1'>
-            <a class='btn btn-outline-warning container-fluid'>Comprar por
-              {{coinFormat precio_alb}}
-            </a>
+            {{#unless itsMine}}
+              <a
+               data-bs-toggle='modal'
+               href='#buy-modal-1'
+               class='btn btn-outline-warning container-fluid'
+              >Comprar por
+                {{coinFormat precio_alb}}
+              </a>
+            {{else}}
+              <a
+               class='btn btn-outline-warning container-fluid'
+              >Felicidades, album comprado!
+                <i class="fas fa-shopping-bag ml-1"></i>
+              </a>
+            {{/unless}}
           </div>
+          {{! Hidden inputs }}
+            <input type='hidden' value='{{id_alb}}'
+            />
+            <input type='hidden' value='{{nombre_alb}}'
+            />
+            <input type='hidden' value='{{dateFormat fecha_alb}}'
+            />
+            <input type='hidden' value='{{precio_alb}}'
+            />
         </div>
       {{/each}}
     {{else}}
@@ -182,3 +354,49 @@
   </div>
 
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Last Album Art
+    const btnLastBuy = document.getElementById('last-alb-buy');
+    const lastId = document.getElementById('last-id').value;
+    const lastName = document.getElementById('last-name').value;
+    const lastPrice = document.getElementById('last-price').value;
+    const lastDate = document.getElementById('last-date').value;
+
+    // Modal labels
+    const title = document.getElementById('title-modal-alb');
+    const date = document.getElementById('date-modal-alb');
+    const price = document.getElementById('price-modal-alb');
+
+    // Form buy
+    const form = document.getElementById('modal-buy');
+    const iva = {{iva.valor_imp}};
+
+    const ingresarDatos = (lid, lname, lprice, ldate) => {
+      form.setAttribute('action',`/user/buy/${lid}`);
+
+      title.innerText = lname;
+      date.innerText = ldate;
+      const precioTotal = (lprice * iva) + Number(lprice);
+      price.innerText = `$ ${precioTotal.toFixed(2)}`;
+    }
+
+    btnLastBuy.onclick = () => ingresarDatos(lastId, lastName, lastPrice, lastDate);
+
+    const allAlbum = document.getElementById('all-album');
+
+    for (const album of allAlbum.children) {
+      const idAlb = album.children[4].value;
+      const name  = album.children[5].value;
+      const date = album.children[6].value;
+      const price = Number(album.children[7].value);
+
+      // BTN
+      const btnBuy = album.children[3].children[0];
+
+      btnBuy.onclick = () => ingresarDatos(idAlb, name, price, date);
+    }
+
+  })
+</script>

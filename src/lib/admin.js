@@ -299,7 +299,7 @@ const deletePlan = async (req, idPlan) => {
     console.log(e);
     req.flash(
       'messageAdminFail',
-      'No se pudo eliminar el plan, plan ya tiene registros'
+      'No se puede borrar el plan porque hay artistas que ya compraron el plan'
     );
   }
 };

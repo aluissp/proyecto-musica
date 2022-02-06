@@ -1,3 +1,219 @@
 <div class='container my-4'>
-  
+  <div class='row col-12 card border-primary mx-auto mt-3'>
+    <h4 class='text-center my-3 border-bottom border-white pb-2'>
+      OBTENER FACTURAS
+    </h4>
+
+    <form
+      class='mt-0 d-flex justify-content-between'
+      method='POST'
+      id='filters-fac'
+    >
+      <div class='col-8 px-auto d-flex align-items-center'>
+        <div class='col-6 border border-white rounded py-3 mr-1'>
+          <label class='font-weight-bold text-info mr-3'>Filtros</label>
+          <input
+            type='radio'
+            name='filtros'
+            value='facturas'
+            class='mx-1'
+            id='user-fac'
+            checked
+          />
+          <label class='mx-0 mb-0'>Facturas</label>
+          <input
+            type='radio'
+            name='filtros'
+            value='tarjetas_usuarios'
+            class='mx-1'
+            id='user-card'
+          />
+          <label class='mb-0'>Nro. tarjeta</label>
+
+          <div class='row d-flex mx-1'>
+            {{! Bill list }}
+            <select class='custom-select' name='codigo_fac' id='list-bill'>
+              <option value='none' selected>Elija una factura</option>
+              {{#each facturas}}
+                <option value='{{codigo_fac}}'>Factura # {{codigo_fac}}</option>
+              {{/each}}
+            </select>
+            {{! Card list }}
+            <select
+              class='custom-select d-none'
+              name='tarjeta_fac'
+              id='list-card'
+            >
+              <option value='none' selected>Elija una tarjeta</option>
+              {{#each tarjetas}}
+                <option value='{{numero_tar}}'>Tarjeta # {{numero_tar}}</option>
+              {{/each}}
+            </select>
+
+          </div>
+        </div>
+        <div class='col-6 border border-white rounded py-4 ml-1 d-flex'>
+          <div class='col-4 px-0 mr-0 d-flex align-items-center'>
+            <label class='font-weight-bold text-info mr-3'>Ordenar por</label>
+          </div>
+          <div class='col-8 px-0'>
+
+            <input
+              type='radio'
+              name='ordenar'
+              value='fechaemision_fac'
+              class='mx-1'
+              checked
+            />
+            <label class='mb-0'>Fecha emision</label>
+            <input
+              type='radio'
+              name='ordenar'
+              value='cantidad_fac'
+              class='mx-1'
+            />
+            <label class='mb-0'>Cantidad</label>
+
+            <input type='radio' name='ordenar' value='total_fac' class='mx-1' />
+            <label class='mb-0' id='lbfac3'>Costo total</label>
+          </div>
+        </div>
+      </div>
+      <div class='col-4 px-auto py-0'>
+        <input
+          class='form-control mt-3'
+          name='wordkey'
+          placeholder='Ingrese el factura o tarjeta para filtrar'
+        />
+        <div class='row py-2'>
+          <div class='col-5'>
+            <input
+              type='radio'
+              name='ordenar2'
+              value='ASC'
+              class='mx-1'
+              checked
+            />
+            <label class='mb-0'>Ascendente</label>
+            <input type='radio' name='ordenar2' value='DESC' class='mx-1' />
+            <label class='mb-0'>Descendente</label>
+          </div>
+          <div class='col-7 d-flex justify-content-end'>
+            <button
+              class='btn btn-outline-danger mx-1 d-flex align-items-center'
+              type='submit'
+              id='user-pdf'
+            >
+              PDF
+              <i class='far fa-file-pdf ml-1'></i>
+            </button>
+            <button
+              class='btn btn-outline-info ml-1'
+              type='submit'
+              data-bs-toggle='tooltip'
+              data-bs-placement='top'
+              title='Para buscar solo tarjetas marcar Nro. tarjeta'
+              id='user-search'
+            >
+              Buscar
+              <i class='fas fa-search'></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </form>
+
+    <!-- Table -->
+    {{!--  codigo_fac | id_usu | fechaemision_fac | subtotal_fac | iva_fac | total_fac | tarjeta_fac --}}
+    <table class='table table-striped table-hover' id='table'>
+      <thead>
+        <tr>
+          <th># Código</th>
+          <th>Fecha de emisión
+            <i class="fas fa-calendar-day ml-1"></i>
+          </th>
+          <th>Subtotal</th>
+          <th>
+            iva
+            <i class="fas fa-percent ml-1"></i>
+          </th>
+          <th>Total</th>
+          <th>Tarjeta
+            <i class="fas fa-credit-card ml-1"></i>
+          </th>
+          <th></th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {{#each bills}}
+          <tr>
+            <td></td>
+            <td></td>
+            <td>{{nro}}</td>
+            <td>{{seudonimo_art}}</td>
+            <td>{{email_art}}</td>
+            <td>{{pais_art}}</td>
+            <td>
+              <a
+                class='btn btn-outline-danger'
+                type='submit'
+                href="/admin/art/pdf/{{email_art}}"
+              >
+               Generar PDF
+                <i class='far fa-file-pdf ml-1'></i>
+              </a>
+
+            </td>
+          </tr>
+        {{/each}}
+
+      </tbody>
+    </table>
+
+  </div>
+
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Opciones
+    const bill = document.getElementById('user-fac');
+    const card = document.getElementById('user-card');
+
+    // Combo box
+    const listBill = document.getElementById('list-bill');
+    const listCard = document.getElementById('list-card');
+
+    // Form
+    const form  = document.getElementById('filters-fac');
+
+    // PDF and Search
+    const btnSearch = document.getElementById('user-search');
+    const btnPdf = document.getElementById('user-pdf');
+
+    bill.onclick = () => {
+      listBill.classList.add('d-none');
+      listCard.classList.add('d-none');
+
+      listBill.classList.remove('d-none');
+    }
+
+    card.onclick = () => {
+      listBill.classList.add('d-none');
+      listCard.classList.add('d-none');
+
+      listCard.classList.remove('d-none');
+    }
+
+    btnSearch.onclick = () => {
+      form.setAttribute('action', '/user/bill');
+    }
+
+    btnPdf.onclick = () => {
+      form.setAttribute('action', '/user/bill/pdf');
+    }
+
+
+  });
+</script>

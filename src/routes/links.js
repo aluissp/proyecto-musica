@@ -2,7 +2,7 @@ const express = require('express'); // Importamos la libreria
 const router = express.Router();
 const { db } = require('../conexion');
 const { whitPlan } = require('../lib/auth');
-const { getAllPlan } = require('../lib/adminManagement');
+const { getAllPlan } = require('../lib/admin');
 // RUTAS SOLO DE ARTISTAS
 // CRUD ALBUM
 router.route('/addmusic')

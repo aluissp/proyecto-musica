@@ -1,4 +1,4 @@
-const { getCurrentPlan } = require("./suscription");
+const { getCurrentPlan } = require("./artist");
 
 module.exports = {
   isLoggedIn(req, res, next) {

@@ -2,8 +2,8 @@ const express = require('express'); // Importamos la libreria
 const router = express.Router();
 const passport = require('passport');
 const { isLoggedIn, isNotLoggedIn } = require('../lib/auth');
-const { getSummaryMusic } = require('../lib/suscription');
-const { getLatestSub } = require('../lib/adminManagement');
+const { getSummaryMusic } = require('../lib/artist');
+const { getLatestSub } = require('../lib/admin');
 // ARTISTAS
 // Autenticacion
 router.route('/signup/artist')

@@ -1,10 +1,4 @@
 const { db } = require('../conexion');
-const {
-  construcPdf,
-  insertHeader,
-  insertTableWhite,
-  insertTable,
-} = require('../lib/pdfSimple');
 
 const exploreMusic = async (wordkey) => {
   try {
@@ -50,7 +44,7 @@ const exploreMusic = async (wordkey) => {
   }
 };
 
-const getFullArtist = async (idArt) => {
+const getFullArtist = async (idArt, idUser) => {
   try {
     const consulta1 = await db.query(
       `SELECT id_art, seudonimo_art, pais_art
@@ -59,7 +53,7 @@ const getFullArtist = async (idArt) => {
       [idArt]
     );
     const consulta2 = await db.query(
-      `SELECT id_alb, nombre_alb, numpistas_alb, precio_alb
+      `SELECT id_alb, nombre_alb, numpistas_alb, precio_alb, fecha_alb
        FROM albumes
        WHERE id_art = $1
        ORDER BY nombre_alb`,
@@ -89,6 +83,9 @@ const getFullArtist = async (idArt) => {
     const artista = consulta1.rows[0];
     const albumes = consulta2.rows;
     const canciones = consulta3.rows;
+    const ultimoLanzamiento = consulta4.rows[0];
+
+    const misAlbumes = await getMyAlbumId(idUser);
 
     let i = 0;
     let nroPistas = 0;
@@ -96,6 +93,11 @@ const getFullArtist = async (idArt) => {
     albumes.forEach((album) => {
       i++;
       nroPistas += album.numpistas_alb;
+      for (const miAlb of misAlbumes) {
+        if (miAlb.albumes_comprados === album.id_alb) {
+          album.itsMine = true;
+        }
+      }
     });
     info.nroAlbumes = i;
     info.nroPistas = nroPistas;
@@ -107,12 +109,18 @@ const getFullArtist = async (idArt) => {
       i++;
     });
 
+    for (const miAlb of misAlbumes) {
+      if (miAlb.albumes_comprados === ultimoLanzamiento.id_alb) {
+        ultimoLanzamiento.itsMine = true;
+      }
+    }
+
     const response = {
       artista,
       albumes,
       canciones,
       info,
-      ultimoLanzamiento: consulta4.rows[0],
+      ultimoLanzamiento,
     };
     return response;
   } catch (e) {
@@ -132,7 +140,7 @@ const getFullAlbum = async (idAlb) => {
     );
 
     const consulta2 = await db.query(
-      `SELECT nombre_alb, numpistas_alb, fecha_alb, seudonimo_art
+      `SELECT id_art, nombre_alb, numpistas_alb, fecha_alb, seudonimo_art
       FROM albumes INNER JOIN artistas USING(id_art)
       WHERE id_alb = $1`,
       [idAlb]
@@ -144,6 +152,7 @@ const getFullAlbum = async (idAlb) => {
       fecha: consulta2.rows[0].fecha_alb,
       pistas: consulta2.rows[0].numpistas_alb,
       artista: consulta2.rows[0].seudonimo_art,
+      idArt: consulta2.rows[0].id_art,
     };
     return response;
   } catch (e) {
@@ -164,10 +173,7 @@ const updatePerfil = async (
     if (genero === 'none') {
       req.flash('messageUserFail', 'Debe eligir un genero valido!');
     } else if (edad < 18) {
-      req.flash(
-        'messageUserFail',
-        'Usted debe tener al menos 18 años!'
-      );
+      req.flash('messageUserFail', 'Usted debe tener al menos 18 años!');
     } else {
       const data = [nombre, apellido, genero, fnacimiento, idUser];
       await db.query(
@@ -227,8 +233,33 @@ const calcularEdad = (fecha) => {
 
   return edad;
 };
+
+const getIva = async () => {
+  try {
+    const consulta = await db.query(
+      `SELECT valor_imp FROM impuestos WHERE id_imp = 'imp-2'`
+    );
+
+    const iva = consulta.rows[0];
+    return iva;
+  } catch (e) {
+    console.log(e);
+  }
+};
+
+const getMyAlbumId = async (idUser) => {
+  try {
+    const consulta = await db.query(`SELECT albumes_comprados($1)`, [idUser]);
+    const misAlbumes = consulta.rows;
+    return misAlbumes;
+  } catch (e) {
+    console.log(e);
+  }
+};
 exports.exploreMusic = exploreMusic;
 exports.getFullArtist = getFullArtist;
 exports.getFullAlbum = getFullAlbum;
 exports.updatePerfil = updatePerfil;
 exports.updatePass = updatePass;
+exports.getIva = getIva;
+exports.getMyAlbumId = getMyAlbumId;

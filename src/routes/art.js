@@ -22,7 +22,9 @@ const {
   getBillReport,
   getBillPDF,
   getDefaultBillReport,
-} = require('../lib/suscription');
+  // IVA
+  getIva,
+} = require('../lib/artist');
 
 // Perfil
 router
@@ -32,12 +34,14 @@ router
     const suscripciones = await getSuscriptions(req.user.id_art);
     const planes = await getPlans();
     const planActual = await getCurrentPlan(req.user.id_art);
+    const iva = await getIva();
     const artSubInfo = {
       tarjetas,
       suscripciones,
       planes,
       planActual,
       defaultview: true,
+      iva,
     };
     // console.log(planes);
     res.render('artist/profileArt', artSubInfo);
@@ -80,12 +84,15 @@ router.route('/art/:view').get(async (req, res) => {
   const tarjetas = await getCardArt(req.user.id_art);
   const suscripciones = await getSuscriptions(req.user.id_art);
   const planes = await getPlans();
+  const iva = await getIva();
+
   const planActual = await getCurrentPlan(req.user.id_art);
   const artSubInfo = {
     tarjetas,
     suscripciones,
     planes,
     planActual,
+    iva,
   };
 
   if (nrovista === '1') {

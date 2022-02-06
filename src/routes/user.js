@@ -1,12 +1,14 @@
 const express = require('express'); // Importamos la libreria
 const router = express.Router();
 const { isLoggedIn } = require('../lib/auth');
+const { db } = require('../conexion');
 const {
   exploreMusic,
   getFullArtist,
   getFullAlbum,
   updatePerfil,
   updatePass,
+  getIva,
 } = require('../user/user');
 
 const {
@@ -15,6 +17,8 @@ const {
   updateCard,
   deleteCard,
 } = require('../user/card');
+
+const { getFullBill, insertBill } = require('../user/bill');
 // Perfil
 router
   .route('/')
@@ -73,7 +77,11 @@ router
 // Artistas
 router.route('/art/:idArt').get(async (req, res) => {
   const { idArt } = req.params;
-  const response = await getFullArtist(idArt);
+  const response = await getFullArtist(idArt, req.user.id_usu);
+  const tarjetas = await getUserCard(req.user.id_usu);
+  const iva = await getIva();
+  response.tarjetas = tarjetas;
+  response.iva = iva;
   res.render('user/artist', response);
 });
 
@@ -84,8 +92,25 @@ router.route('/art/album/:idAlb').get(async (req, res) => {
   res.render('user/album', response);
 });
 
-router.route('/bill').get(isLoggedIn, (req, res) => {
-  res.render('user/bill');
+// Facturas
+router
+  .route('/bill')
+  .get(isLoggedIn, async (req, res) => {
+    const facturas = await getFullBill(req.user.id_usu);
+    const tarjetas = await getUserCard(req.user.id_usu);
+
+    res.render('user/bill', { tarjetas, facturas });
+  })
+  .post(async (req, res) => {
+    console.log(req.body);
+    const facturas = await getFullBill(req.user.id_usu);
+    const tarjetas = await getUserCard(req.user.id_usu);
+
+    res.render('user/bill', { tarjetas, facturas });
+  });
+
+router.route('/bill/pdf').post(async (req, res) => {
+  console.log(req.body);
 });
 
 // Tarjetas
@@ -127,6 +152,13 @@ router.route('/search/card').post(async (req, res) => {
   res.render('user/card', { tarjetas });
 });
 
+// Compras de albumes
+router.route('/buy/:idAlb').post(async (req, res) => {
+  const { tarjeta } = req.body;
+  const { idAlb } = req.params;
+  const idUser = req.user.id_usu;
 
+  await insertBill(req, res, idUser, idAlb, tarjeta);
+});
 
 exports.router = router;

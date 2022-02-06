@@ -1,4 +1,3 @@
-const { serializeUser } = require('passport');
 const { format } = require('timeago.js');
 // const dateFormat = require('handlebars-dateformat');
 
@@ -33,4 +32,10 @@ helpers.firstPlan = (idPlan) => {
 helpers.verifyAdm = (idAdm) => {
   return idAdm === 'admin-1';
 };
+
+helpers.ivaFormat = (iva) => {
+  const valor = iva * 100;
+  return `${valor} %`;
+};
+
 module.exports = helpers;

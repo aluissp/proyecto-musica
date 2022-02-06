@@ -5,7 +5,8 @@ const getUserCard = async (idUser, wordkey) => {
     wordkey = wordkey || '%';
     const consulta = await db.query(
       `SELECT * FROM tarjetas_usuarios
-      WHERE id_usu = $1 AND numero_tar LIKE '${wordkey}%'`,
+      WHERE id_usu = $1 AND numero_tar LIKE '${wordkey}%'
+      ORDER BY fcaducidad_tar`,
       [idUser]
     );
     return consulta.rows;

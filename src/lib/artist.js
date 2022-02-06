@@ -689,6 +689,17 @@ const billPageCard = (table) => {
   //return { nroAlbumes, precioTotal, pistasTotal };
 };
 
+const getIva = async () => {
+  try {
+    const consulta = await db.query(
+      `SELECT valor_imp FROM impuestos WHERE id_imp = 'imp-1'`
+    );
+    const iva = consulta.rows[0];
+    return iva;
+  } catch (e) {
+    console.log(e);
+  }
+};
 const getSummaryMusic = async (idArt) => {
   try {
     const consulta1 = await db.query(
@@ -733,3 +744,4 @@ exports.getBillReport = getBillReport;
 exports.getBillPDF = getBillPDF;
 exports.getDefaultBillReport = getDefaultBillReport;
 exports.getSummaryMusic = getSummaryMusic;
+exports.getIva = getIva;

@@ -1,7 +1,7 @@
 const express = require('express'); // Importamos la libreria
 const router = express.Router();
 const { isLoggedIn, isNotLoggedIn } = require('../lib/auth');
-const { getPlans } = require('../lib/suscription');
+const { getPlans } = require('../lib/artist');
 const {
   getArtistFilter,
   getArtistPdf,
@@ -14,7 +14,7 @@ const {
   updatePerfil,
   updatePass,
   newAdmin,
-} = require('../lib/adminManagement');
+} = require('../lib/admin');
 
 // Perfil
 router
