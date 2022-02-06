@@ -256,6 +256,98 @@ const getMyAlbumId = async (idUser) => {
     console.log(e);
   }
 };
+
+const getMyAllSong = async (idUser) => {
+  try {
+    const response = {};
+    const misIdAlbumes = await getMyAlbumId(idUser);
+    const artistas = [];
+    const albumes = [];
+    let nroAlb = 0;
+    let nroCan = 0;
+    let totalPrice = 0;
+
+    for (const id of misIdAlbumes) {
+      nroAlb++;
+      const consulta1 = await db.query(
+        `SELECT id_alb, nombre_alb, precio_alb FROM albumes WHERE id_alb = $1`,
+        [id.albumes_comprados]
+      );
+      totalPrice += consulta1.rows[0].precio_alb;
+      albumes.push(consulta1.rows[0]);
+
+      const consulta2 = await db.query(
+        `SELECT id_art, seudonimo_art
+          FROM albumes INNER JOIN artistas USING(id_art)
+          WHERE id_alb = $1`,
+        [id.albumes_comprados]
+      );
+      const art = consulta2.rows[0];
+
+      if (artistas.length === 0) {
+        artistas.push(art);
+      }
+      for (const artista of artistas) {
+        if (artista.id_art !== art.id_art) {
+          artistas.push(art);
+        }
+      }
+
+      const consulta3 = await db.query(
+        `SELECT id_can
+        FROM canciones
+        WHERE id_alb = $1`,
+        [id.albumes_comprados]
+      );
+      nroCan += consulta3.rows.length;
+    }
+
+    response.albumes = albumes;
+    response.artistas = artistas;
+    response.nroAlb = nroAlb;
+    response.nroCan = nroCan;
+    response.totalPrice = totalPrice;
+    return response;
+  } catch (e) {
+    console.log(e);
+  }
+};
+
+const getMySongs = async (idUser, wordkey) => {
+  try {
+    wordkey = wordkey || '%';
+    const misIdAlbumes = await getMyAlbumId(idUser);
+    const canciones = [];
+
+    for (const id of misIdAlbumes) {
+      const consulta1 = await db.query(
+        `SELECT id_can, id_alb,  nombre_can, seudonimo_art, nombre_alb, nombre_gen, duracion_can, nropista_can
+        FROM canciones INNER JOIN albumes USING(id_alb)
+        INNER JOIN artistas USING(id_art)
+        INNER JOIN generos USING(id_gen)
+        WHERE nombre_can LIKE '${wordkey}%' AND id_alb = $1
+        ORDER BY nombre_can`,
+        [id.albumes_comprados]
+      );
+      const songs = consulta1.rows;
+
+      for (const song of songs) {
+        canciones.push(song);
+      }
+    }
+
+    let i = 1;
+    canciones.forEach((cancion) => {
+      cancion.nro = i;
+      i++;
+    });
+
+    return canciones;
+  } catch (e) {
+    console.log(e);
+  }
+};
+
 exports.exploreMusic = exploreMusic;
 exports.getFullArtist = getFullArtist;
 exports.getFullAlbum = getFullAlbum;
@@ -263,3 +355,5 @@ exports.updatePerfil = updatePerfil;
 exports.updatePass = updatePass;
 exports.getIva = getIva;
 exports.getMyAlbumId = getMyAlbumId;
+exports.getMyAllSong = getMyAllSong;
+exports.getMySongs = getMySongs;

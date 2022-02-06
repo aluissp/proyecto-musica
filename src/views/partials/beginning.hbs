@@ -1,6 +1,7 @@
 <div class='row p-0'>
   <div class='col-3 p-0'>
     <div class='card border-light mb-3 mr-3'>
+
       <p class='m-2'>
         Bienvenido
         {{user.nombres}}
@@ -10,24 +11,25 @@
         Resumen breve:
       </p>
       <p class='m-2'>
-        Haz comprado: n albumes
+        Haz comprado:
+        {{nroAlb}}
+        albumes
       </p>
       <p class='mx-2 my-0'>
-        Tienes: n canciones
+        Tienes:
+        {{nroCan}}
+        canciones
       </p>
       <p class='m-2'>
-        Haz gastado: n dolares
+        Haz gastado:
+        {{coinFormat totalPrice}}
+        dolares en total
       </p>
     </div>
     <div class='btn-group-vertical container-fluid pl-0'>
-      <a class='btn btn-outline-light'>Albumes
-        <i class='fas fa-compact-disc ml-1'></i>
-      </a>
-      <a class='btn btn-outline-light'>Canciones
+
+      <a href='/user/song' class='btn btn-outline-light'>Mis canciones
         <i class='fas fa-music ml-1'></i>
-      </a>
-      <a class='btn btn-outline-light'>Artistas
-        <i class='fas fa-microphone-alt ml-1'></i>
       </a>
     </div>
   </div>
@@ -36,96 +38,48 @@
     {{! Albumes }}
     <div class='row justify-content-star ml-4 border-bottom pb-2'>
 
-      <div class='col-3 mx-4 my-2 border border-light rounded-lg'>
-        <div class='row justify-content-center'>
-          <img src='/img/Logos/album2.png' alt='logo-album' width='200' />
+      {{#each albumes}}
+        <div class='col-3 mx-4 my-2 border border-light rounded-lg'>
+          <div class='row justify-content-center'>
+            <img src='/img/Logos/album2.png' alt='logo-album' width='200' />
+          </div>
+          <div class='row p-1'>
+            <h6>{{nombre_alb}}</h6>
+          </div>
+          <div class='row p-1'>
+            <a
+              href='/user/art/album/{{id_alb}}'
+              class='btn btn-outline-light container-fluid'
+            >Ver album
+              <i class='fas fa-eye ml-1'></i>
+            </a>
+          </div>
         </div>
-        <div class='row p-1'>
-          <h5>Nucles activos imaginarios de este universo</h5>
-        </div>
-        <div class='row p-1'>
-          <button
-            type='button'
-            class='btn btn-outline-light container-fluid'
-          >Ver album</button>
-        </div>
-      </div>
-      <div class='col-3 mx-4 my-2 border border-light rounded-lg'>
-        <div class='row justify-content-center'>
-          <img src='/img/Logos/album2.png' alt='logo-album' width='200' />
-        </div>
-        <div class='row p-1'>
-          Nucles activos imaginarios de este universo
-        </div>
-        <div class='row p-1'>
-          <button
-            type='button'
-            class='btn btn-outline-light container-fluid'
-          >Ver album</button>
-        </div>
-      </div>
-      <div class='col-3 mx-4 my-2 border border-light rounded-lg'>
-        <div class='row justify-content-center'>
-          <img src='/img/Logos/album2.png' alt='logo-album' width='200' />
-        </div>
-        <div class='row p-1'>
-          Nucles activos imaginarios de este universo
-        </div>
-        <div class='row p-1'>
-          <button
-            type='button'
-            class='btn btn-outline-light container-fluid'
-          >Ver album</button>
-        </div>
-      </div>
-      <div class='col-3 mx-4 my-2 border border-light rounded-lg'>
-        <div class='row justify-content-center'>
-          <img src='/img/Logos/album2.png' alt='logo-album' width='200' />
-        </div>
-        <div class='row p-1'>
-          Nucles activos imaginarios de este universo
-        </div>
-        <div class='row p-1'>
-          <button
-            type='button'
-            class='btn btn-outline-light container-fluid'
-          >Ver album</button>
-        </div>
-      </div>
-      <div class='col-3 mx-4 my-2 border border-light rounded-lg'>
-        <div class='row justify-content-center'>
-          <img src='/img/Logos/album2.png' alt='logo-album' width='200' />
-        </div>
-        <div class='row p-1'>
-          Nucles activos imaginarios de este universo
-        </div>
-        <div class='row p-1'>
-          <button
-            type='button'
-            class='btn btn-outline-light container-fluid'
-          >Ver album</button>
-        </div>
-      </div>
-
+      {{/each}}
     </div>
 
     <h3 class='ml-5 mt-2'>Artistas</h3>
     {{! Artistas }}
     <div class='row justify-content-star ml-4'>
-      <div class='col-3 mx-4 my-2 border border-light rounded-lg'>
-        <div class='row justify-content-center bg-light'>
-          <img src='/img/Logos/art2.png' alt='logo-album' width='200' />
+
+      {{#each artistas}}
+        <div class='col-3 mx-4 my-2 border border-light rounded-lg'>
+          <div class='row justify-content-center bg-light'>
+            <img src='/img/Logos/art2.png' alt='logo-album' width='200' />
+          </div>
+          <div class='row p-1 justify-content-center'>
+            {{seudonimo_art}}
+          </div>
+          <div class='row p-1'>
+            <a
+              href='/user/art/{{id_art}}'
+              class='btn btn-outline-light container-fluid'
+            >Ver artista
+              <i class='fas fa-eye ml-1'></i>
+            </a>
+          </div>
         </div>
-        <div class='row p-1'>
-          Julio Jaramillo
-        </div>
-        <div class='row p-1'>
-          <button
-            type='button'
-            class='btn btn-outline-light container-fluid'
-          >Ver artista</button>
-        </div>
-      </div>
+      {{/each}}
     </div>
   </div>
 </div>

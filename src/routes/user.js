@@ -9,6 +9,7 @@ const {
   updatePerfil,
   updatePass,
   getIva,
+  getMySongs,
 } = require('../user/user');
 
 const {
@@ -97,6 +98,19 @@ router.route('/art/album/:idAlb').get(async (req, res) => {
   const response = await getFullAlbum(idAlb);
   res.render('user/album', response);
 });
+
+// Canciones
+router
+  .route('/song')
+  .get(async (req, res) => {
+    const canciones = await getMySongs(req.user.id_usu);
+    res.render('user/song', { canciones });
+  })
+  .post(async (req, res) => {
+    const { wordkey } = req.body;
+    const canciones = await getMySongs(req.user.id_usu, wordkey);
+    res.render('user/song', { canciones });
+  });
 
 // Facturas
 router
