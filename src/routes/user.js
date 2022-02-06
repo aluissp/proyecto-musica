@@ -18,7 +18,13 @@ const {
   deleteCard,
 } = require('../user/card');
 
-const { getFullBill, insertBill } = require('../user/bill');
+const {
+  getFullBill,
+  insertBill,
+  getBill,
+  getBillPdf,
+  getBillDetail,
+} = require('../user/bill');
 // Perfil
 router
   .route('/')
@@ -96,21 +102,41 @@ router.route('/art/album/:idAlb').get(async (req, res) => {
 router
   .route('/bill')
   .get(isLoggedIn, async (req, res) => {
-    const facturas = await getFullBill(req.user.id_usu);
+    const bills = await getFullBill(req.user.id_usu);
     const tarjetas = await getUserCard(req.user.id_usu);
+    const listBill = bills;
 
-    res.render('user/bill', { tarjetas, facturas });
+    res.render('user/bill', { tarjetas, bills, listBill });
   })
   .post(async (req, res) => {
-    console.log(req.body);
-    const facturas = await getFullBill(req.user.id_usu);
+    const { filtros, codigo, tarjeta, ordenar, ordenar2, wordkey } = req.body;
+    const listBill = await getFullBill(req.user.id_usu);
     const tarjetas = await getUserCard(req.user.id_usu);
-
-    res.render('user/bill', { tarjetas, facturas });
+    const bills = await getBill(
+      filtros,
+      codigo,
+      tarjeta,
+      ordenar,
+      ordenar2,
+      wordkey,
+      req.user.id_usu
+    );
+    res.render('user/bill', { tarjetas, bills, listBill });
   });
 
-router.route('/bill/pdf').post(async (req, res) => {
-  console.log(req.body);
+router.route('/bill/:idFac').post(async (req, res) => {
+  const { idAlb } = req.body;
+  const { idFac } = req.params;
+  const response = await getBillDetail(req, idAlb);
+
+  response.nro = idFac;
+  res.render('user/billDetail', response);
+});
+
+router.route('/bill/pdf/:idFac').post(async (req, res) => {
+  const { idAlb } = req.body;
+
+  await getBillPdf(req, res, req.user.id_usu, idAlb);
 });
 
 // Tarjetas
