@@ -92,8 +92,8 @@
             </select>
           </div>
         {{else}}
-          <h3> No tienes registrado ninguna tarjeta!</h3>
-          <h4>Haz click <a href='/user/card'>aquí</a> para registrar uno</h4>
+          <h4> No tienes registrado ninguna tarjeta!</h4>
+          <h5>Haz click <a href='/user/card'>aquí</a> para registrar uno</h5>
         {{/if}}
       </div>
       {{! Footer }}
@@ -382,7 +382,9 @@
       price.innerText = `$ ${precioTotal.toFixed(2)}`;
     }
 
-    btnLastBuy.onclick = () => ingresarDatos(lastId, lastName, lastPrice, lastDate);
+    if (btnLastBuy) {
+      btnLastBuy.onclick = () => ingresarDatos(lastId, lastName, lastPrice, lastDate);
+    }
 
     const allAlbum = document.getElementById('all-album');
 

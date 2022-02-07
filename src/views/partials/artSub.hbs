@@ -66,6 +66,7 @@
                         <div class="col-6 pl-0">
                             <h5 class="px-0"> Su tarjeta es : </h5>
                             <h5 class="px-0 text-warning" id="nro-card-buy"></h5>
+                            <input type="hidden" name="cardBuy" id="input-card-buy">
                         </div>
                         <div class="col-6 ml-4">
                             <h5 > El precio total es : </h5>
@@ -265,6 +266,7 @@
 
             const nameplan = document.getElementById('name-plan-buy');
             const cardbuy = document.getElementById('nro-card-buy');
+            const inputCardbuy = document.getElementById('input-card-buy');
             const pricebuy = document.getElementById('price-plan-buy');
 
             for (i = 0; i < 4; i++) {
@@ -278,8 +280,8 @@
                 const carddefault = document.getElementById('carddefault').getAttribute('carddefault');
                 nameplan.innerText = nameplanrow;
                 cardbuy.innerText = carddefault;
+                inputCardbuy.value = carddefault;
                 var totalPrice = new Number(price.split('$')[1]);
-                //const iva ={{formatIva iva.valor_imp}};
                 const iva = {{iva.valor_imp}};
                 totalPrice = (totalPrice * iva ) + totalPrice;
                 totalPrice = totalPrice.toFixed(2);

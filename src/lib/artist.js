@@ -103,12 +103,12 @@ const deleteCard = async (id) => {
   }
 };
 
-const buyPlan = async (idArt, idPlan) => {
+const buyPlan = async (idArt, idPlan, card) => {
   try {
     const hoy = new Date(Date.now());
     await db.query(
-      'INSERT INTO suscripciones(id_art, id_pl, finico_sus) VALUES($1, $2, $3)',
-      [idArt, idPlan, hoy]
+      'INSERT INTO suscripciones(id_art, id_pl, finico_sus, tarjeta_fac) VALUES($1, $2, $3, $4)',
+      [idArt, idPlan, hoy, card]
     );
     return 'Se ha comprado exitosamente su plan';
   } catch (e) {
@@ -538,19 +538,21 @@ const getBillPDF = async (req, doc, content) => {
     cellsAlign: 'left',
   });
 
-  doc.addTable(colum, tabla, {
-    border: null,
-    width: 'fill_body',
-    striped: true,
-    headBackground: '#b1bfca',
-    stripedColors: ['#ffffff', '#e3f2fd'],
-    cellsPadding: 10,
-    marginLeft: 45,
-    marginRight: 45,
-    headAlign: 'left',
-  });
+  if (tabla.length !== 0) {
+   doc.addTable(colum, tabla, {
+     border: null,
+     width: 'fill_body',
+     striped: true,
+     headBackground: '#b1bfca',
+     stripedColors: ['#ffffff', '#e3f2fd'],
+     cellsPadding: 10,
+     marginLeft: 45,
+     marginRight: 45,
+     headAlign: 'left',
+   });
 
-  billPageCard(tabla);
+   billPageCard(tabla);
+  }
   /*
   const colf = [{ key: 'summary', label: 'Resumen', aling: 'left' }];
   let dataf;
@@ -675,7 +677,7 @@ const billPageCard = (table) => {
   let cards = [];
 
   for (let row of table) {
-    console.log(row);
+
     if (cards.length === 0) {
       cards.push(row.tarjeta_fac);
     }
@@ -685,7 +687,7 @@ const billPageCard = (table) => {
       }
     }
   }
-  console.log(cards);
+
   //return { nroAlbumes, precioTotal, pistasTotal };
 };
 

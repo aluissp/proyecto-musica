@@ -296,8 +296,7 @@ const deletePlan = async (req, idPlan) => {
     await db.query(`DELETE FROM planes WHERE id_pl = $1`, [idPlan]);
     req.flash('messageAdmin', 'Se elimino correctamente el plan');
   } catch (e) {
-    console.log(e);
-    req.flash(
+    await req.flash(
       'messageAdminFail',
       'No se puede borrar el plan porque hay artistas que ya compraron el plan'
     );
@@ -432,6 +431,265 @@ const newAdmin = async (
   }
 };
 
+const getAllUser = async () => {
+  try {
+    const consulta = await db.query(
+      `SELECT nombres, id_usu
+      FROM usuarios
+      ORDER BY nombres;`
+    );
+
+    return consulta.rows;
+  } catch (e) {
+    console.log(e);
+  }
+};
+
+const getAllBill = async () => {
+  try {
+    const consulta = await db.query(
+      `SELECT codigo_fac, id_usu, fechaemision_fac, subtotal_fac, iva_fac, total_fac, tarjeta_fac, id_alb
+      FROM facturas INNER JOIN detalles_facturas USING(codigo_fac)
+      ORDER BY fechaemision_fac`
+    );
+    return consulta.rows;
+  } catch (e) {
+    console.log(e);
+  }
+};
+
+const getBill = async (ordenar, ordenar2, wordkey, idUser) => {
+  try {
+    let response;
+    if (idUser !== '') {
+      const consulta = await db.query(
+        `SELECT codigo_fac, id_usu, fechaemision_fac, subtotal_fac, iva_fac, total_fac, tarjeta_fac, id_alb
+          FROM facturas INNER JOIN detalles_facturas USING(codigo_fac)
+          WHERE id_usu = $1 AND codigo_fac LIKE '${wordkey}%'
+          ORDER BY ${ordenar} ${ordenar2}
+          `,
+        [idUser]
+      );
+      response = consulta.rows;
+    } else {
+      const consulta = await db.query(
+        `SELECT codigo_fac, id_usu, fechaemision_fac, subtotal_fac, iva_fac, total_fac, tarjeta_fac, id_alb
+          FROM facturas INNER JOIN detalles_facturas USING(codigo_fac)
+          WHERE codigo_fac LIKE '${wordkey}%'
+          ORDER BY ${ordenar} ${ordenar2}
+          `
+      );
+      response = consulta.rows;
+    }
+
+    return response;
+  } catch (e) {
+    console.log(e);
+  }
+};
+
+const getBillDetail = async (idUser, idAlb) => {
+  try {
+    const consulta = await db.query(
+      `SELECT tarjeta_fac
+      FROM facturas INNER JOIN detalles_facturas USING(codigo_fac)
+      WHERE id_usu = $1 AND id_alb = $2`,
+      [idUser, idAlb]
+    );
+    const tarjeta = consulta.rows[0].tarjeta_fac;
+
+    const response = await db.query(
+      `SELECT * FROM usuarios WHERE id_usu = $1`,
+      [idUser]
+    );
+    const user = response.rows[0];
+
+    const userData = [
+      {
+        labelData: 'Nombre y apellido',
+        userData: `${user.nombres} ${user.apellidos}`,
+      },
+      { labelData: 'Correo Electrónico', userData: user.email_usu },
+      {
+        labelData: 'Fecha de nacimiento',
+        userData: dateFormat(user.fecha_nacim),
+      },
+      { labelData: 'Género', userData: user.genero },
+      { labelData: 'Tarjeta', userData: tarjeta },
+    ];
+
+    const consulta1 = await db.query(
+      `SELECT codigo_fac, fechaemision_fac, subtotal_fac, iva_fac, total_fac
+      FROM facturas INNER JOIN detalles_facturas USING(codigo_fac)
+      WHERE id_usu = $1 AND id_alb = $2
+      `,
+      [user.id_usu, idAlb]
+    );
+    const billTable = consulta1.rows;
+
+    billTable.forEach((row) => {
+      row.fechaemision_fac = dateFormat(row.fechaemision_fac);
+      row.subtotal_fac = coinFormat(row.subtotal_fac);
+      row.iva_fac = coinFormat(row.iva_fac);
+      row.total_fac = coinFormat(row.total_fac);
+    });
+
+    const consulta2 = await db.query(
+      `SELECT codigo_fac, nombre_alb, fecha_alb, descripcion_fac
+      FROM detalles_facturas INNER JOIN albumes USING(id_alb)
+      WHERE codigo_fac = $1
+      `,
+      [billTable[0].codigo_fac]
+    );
+    const detailBillTable = consulta2.rows;
+
+    detailBillTable.forEach((row) => {
+      row.fecha_alb = dateFormat(row.fecha_alb);
+    });
+
+    const consulta3 = await db.query(
+      `SELECT nombre_can, nombre_gen, duracion_can, nropista_can
+       FROM canciones INNER JOIN albumes USING(id_alb)
+       INNER JOIN generos USING(id_gen)
+       WHERE id_alb = $1
+       ORDER BY nropista_can`,
+      [idAlb]
+    );
+    const songsTable = consulta3.rows;
+    const respon = {
+      userData,
+      billTable,
+      detailBillTable,
+      songsTable,
+    };
+
+    return respon;
+  } catch (e) {
+    console.log(e);
+  }
+};
+
+const getBillPdf = async (req, res, idUser, idAlb) => {
+  try {
+    // Generando pdf
+    let doc = construcPdf(res, `facturación ${req.user.nombres}`);
+    doc = insertHeader(doc, 'Factura de compra');
+
+    doc = await generateBillHeader(doc, idUser, idAlb);
+    doc = await generateBillBody(doc, idUser, idAlb);
+
+    doc.render();
+    doc.end();
+  } catch (e) {
+    console.log(e);
+  }
+};
+
+const generateBillBody = async (doc, idUser, idAlb) => {
+  const billRow = [
+    { key: 'codigo_fac', label: 'Código de facturación', aling: 'left' },
+    { key: 'fechaemision_fac', label: 'Fecha de emisión', aling: 'left' },
+    { key: 'subtotal_fac', label: 'Subtotal', aling: 'left' },
+    { key: 'iva_fac', label: 'iva', aling: 'left' },
+    { key: 'total_fac', label: 'Total', aling: 'left' },
+  ];
+
+  const consulta1 = await db.query(
+    `SELECT codigo_fac, fechaemision_fac, subtotal_fac, iva_fac, total_fac
+    FROM facturas INNER JOIN detalles_facturas USING(codigo_fac)
+    WHERE id_usu = $1 AND id_alb = $2
+    `,
+    [idUser, idAlb]
+  );
+  const billTable = consulta1.rows;
+
+  billTable.forEach((row) => {
+    row.fechaemision_fac = dateFormat(row.fechaemision_fac);
+    row.subtotal_fac = coinFormat(row.subtotal_fac);
+    row.iva_fac = coinFormat(row.iva_fac);
+    row.total_fac = coinFormat(row.total_fac);
+  });
+
+  doc = insertTableWhite(doc, billTable, billRow);
+
+  const detailBillRow = [
+    { key: 'codigo_fac', label: 'Código de facturación', aling: 'left' },
+    { key: 'nombre_alb', label: 'Album', aling: 'left' },
+    { key: 'fecha_alb', label: 'Fecha de lazamiento', aling: 'left' },
+    { key: 'descripcion_fac', label: 'Descripción', aling: 'left' },
+  ];
+
+  const consulta2 = await db.query(
+    `SELECT codigo_fac, nombre_alb, fecha_alb, descripcion_fac
+    FROM detalles_facturas INNER JOIN albumes USING(id_alb)
+    WHERE codigo_fac = $1
+    `,
+    [billTable[0].codigo_fac]
+  );
+  const detailBillTable = consulta2.rows;
+
+  detailBillTable.forEach((row) => {
+    row.fecha_alb = dateFormat(row.fecha_alb);
+  });
+  doc = insertTableWhite(doc, detailBillTable, detailBillRow);
+
+  const songsRow = [
+    { column_name: 'Nombre de la canción' },
+    { column_name: 'Género' },
+    { column_name: 'Duración' },
+    { column_name: 'Nro. pista' },
+  ];
+
+  const consulta3 = await db.query(
+    `SELECT nombre_can, nombre_gen, duracion_can, nropista_can
+     FROM canciones INNER JOIN albumes USING(id_alb)
+     INNER JOIN generos USING(id_gen)
+     WHERE id_alb = $1
+     ORDER BY nropista_can`,
+    [idAlb]
+  );
+  const songsTable = consulta3.rows;
+  doc = insertTable(doc, songsTable, songsRow);
+  return doc;
+};
+
+const generateBillHeader = async (doc, idUser, idAlb) => {
+  const header = [
+    { key: 'labelData', label: 'Datos Personales', aling: 'left' },
+    { key: 'userData', label: '', aling: 'left' },
+  ];
+
+  const consulta = await db.query(
+    `SELECT tarjeta_fac
+    FROM facturas INNER JOIN detalles_facturas USING(codigo_fac)
+    WHERE id_usu = $1 AND id_alb = $2`,
+    [idUser, idAlb]
+  );
+  const tarjeta = consulta.rows[0].tarjeta_fac;
+
+  const response = await db.query(`SELECT * FROM usuarios WHERE id_usu = $1`, [
+    idUser,
+  ]);
+  const user = response.rows[0];
+
+  const userData = [
+    {
+      labelData: 'Nombre y apellido',
+      userData: `${user.nombres} ${user.apellidos}`,
+    },
+    { labelData: 'Correo Electrónico', userData: user.email_usu },
+    {
+      labelData: 'Fecha de nacimiento',
+      userData: dateFormat(user.fecha_nacim),
+    },
+    { labelData: 'Género', userData: user.genero },
+    { labelData: 'Tarjeta', userData: tarjeta },
+  ];
+
+  doc = insertTableWhite(doc, userData, header);
+  return doc;
+};
+
 const dateFormat = (date) => {
   dia = date.getDate();
   mes = parseInt(date.getMonth()) + 1;
@@ -466,3 +724,9 @@ exports.updatePlan = updatePlan;
 exports.updatePerfil = updatePerfil;
 exports.updatePass = updatePass;
 exports.newAdmin = newAdmin;
+exports.calcularEdad = calcularEdad;
+exports.getAllUser = getAllUser;
+exports.getAllBill = getAllBill;
+exports.getBill = getBill;
+exports.getBillDetail = getBillDetail;
+exports.getBillPdf = getBillPdf;

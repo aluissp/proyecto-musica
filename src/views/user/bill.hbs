@@ -206,7 +206,6 @@
 
     // PDF and Search
     const btnSearch = document.getElementById('user-search');
-    const btnPdf = document.getElementById('user-pdf');
 
     bill.onclick = () => {
       listBill.classList.add('d-none');
@@ -224,10 +223,6 @@
 
     btnSearch.onclick = () => {
       form.setAttribute('action', '/user/bill');
-    }
-
-    btnPdf.onclick = () => {
-      form.setAttribute('action', '/user/bill/pdf');
     }
 
 

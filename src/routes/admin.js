@@ -14,6 +14,12 @@ const {
   updatePerfil,
   updatePass,
   newAdmin,
+  //User
+  getAllUser,
+  getAllBill,
+  getBill,
+  getBillDetail,
+  getBillPdf,
 } = require('../lib/admin');
 
 // Perfil
@@ -95,10 +101,39 @@ router.route('/art/pdf/:mail').get(async (req, res) => {
 });
 
 // Report User
-router.route('/user').get(isLoggedIn, (req, res) => {
-  res.render('admin/user');
+router
+  .route('/user')
+  .get(isLoggedIn, async (req, res) => {
+    const users = await getAllUser();
+    const bills = await getAllBill();
+
+    res.render('admin/user', { users, bills });
+  })
+  .post(async (req, res) => {
+    const users = await getAllUser();
+
+    const { usuario, ordenar, ordenar2, wordkey } = req.body;
+
+    const bills = await getBill(ordenar, ordenar2, wordkey, usuario);
+    res.render('admin/user', { users, bills });
+  });
+
+router.route('/user/:idFac').post(async (req, res) => {
+  const { idAlb } = req.body;
+  const { idUser } = req.body;
+  const { idFac } = req.params;
+  const response = await getBillDetail(idUser, idAlb);
+
+  response.nro = idFac;
+  res.render('user/billDetail', response);
 });
 
+router.route('/user/pdf/:idFac').post(async (req, res) => {
+  const { idAlb } = req.body;
+  const { idUser } = req.body;
+
+  await getBillPdf(req, res, idUser, idAlb);
+});
 // Manager Plan
 router
   .route('/planes')

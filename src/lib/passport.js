@@ -1,5 +1,6 @@
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
+const { calcularEdad } = require('./admin');
 const { db } = require('../conexion');
 
 passport.use('local.signin', new LocalStrategy({
@@ -71,7 +72,7 @@ passport.use('local.signupArtist', new LocalStrategy({
         return done(null, newArtist);
     } catch (e) {
         console.log(e);
-        return done(null, null);
+        return done(null, false, req.flash('message', 'La contraseña debe tener al menos 10 digitos'));
     }
 }));
 // Usuarios singup
@@ -91,16 +92,31 @@ passport.use('local.signupUser', new LocalStrategy({
         genero
     ]
     try {
-        await db.query(`INSERT INTO
-        usuarios(id_usu, nombres, apellidos, email_usu, contrasena_usu, fecha_nacim, genero)
-        VALUES ('usu-1',$1, $2, $3, $4, $5, $6)`, newUser);
+        const edad = calcularEdad(date);
 
-        const resultado = await db.query(`SELECT id_usu FROM usuarios WHERE email_usu = $1`, [usermail]);
-        newUser.id = resultado.rows[0].id_usu;
-        return done(null, newUser);
+        if (edad < 18) {
+
+            return done(null, false, req.flash(
+              'message',
+              'Para registrarse debe ser mayor de edad!'
+            ));
+        } else if (password.length < 8) {
+            return done(null, false,req.flash(
+              'messageAdminFail',
+              'La contraseña debe tener al menos 8 caracteres!'
+            ));
+        } else {
+            await db.query(`INSERT INTO
+            usuarios(nombres, apellidos, email_usu, contrasena_usu, fecha_nacim, genero)
+            VALUES ($1, $2, $3, $4, $5, $6)`, newUser);
+
+            const resultado = await db.query(`SELECT id_usu FROM usuarios WHERE email_usu = $1`, [usermail]);
+            newUser.id = resultado.rows[0].id_usu;
+            return done(null, newUser);
+        }
     } catch (e) {
         console.log(e);
-        return done(null, null);
+        return done(null, false, req.flash('message', 'Ocurrio un error a la hora de registrar el usuario'));
     }
 }));
 

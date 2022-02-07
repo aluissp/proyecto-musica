@@ -1,66 +1,101 @@
+<section class='signup-section container p-5'>
+  <div class='row justify-content-center'>
+    <div class='col-10'>
+      <div class='card d-md-flex border-primary'>
+        <div class='card-header p-4 d-flex align-items-start'>
+          <h2 class='mb-4'>Bienvenido a Epicentro Arte</h2>
+        </div>
+        <div class='card-body px-5 pt-5'>
+          <h3 class='mb-4 d-flex justify-content-center'>Crea tu cuenta ahora!</h3>
 
+          <form action='/signup' method='POST' class='d-flex'>
+            <div class='col-12'>
+              {{> message}}
+              <div
+                class='row d-flex align-items-center justify-content-between'
+              >
+                <label class='label'>Ingresa tu nombre</label>
+                <input
+                  type='text'
+                  name='nombre'
+                  class='form-control col-7'
+                  autofocus
+                />
+              </div>
+              <div
+                class='row d-flex align-items-center justify-content-between my-2'
+              >
+                <label class='label'>Ingresa tu apellido</label>
+                <input
+                  type='text'
+                  name='apellido'
+                  class='form-control col-7'
+                  autofocus
+                />
+              </div>
+              <div
+                class='row d-flex align-items-center justify-content-between'
+              >
+                <label class='label'>Ingresa tu fecha de nacimiento</label>
+                <input type='date' name='date' class='form-control col-7' />
+              </div>
 
-<section class="signup-section container p-5">
-	<div class="row justify-content-center">
-		<div class="col-10">
-			<div class="card d-md-flex border-primary">
-				<div class="card-header p-4 d-flex align-items-start">
-					<h2 class="mb-4">Bienvenido a Epicentro Arte</h2>
-				</div>
-				<div class="card-body px-5 pt-5">
-					<h3 class="mb-4 d-flex justify-content-center">Crea tu cuenta ahora!</h3>
+              <div
+                class='row d-flex align-items-center justify-content-between my-2'
+              >
+                <label for='genero' class='form-label'>Selecciona tu genero</label>
+                <select
+                  class='custom-select col-7'
+                  name='genero'
+                  id='list-generos'
+                  required
+                >
+                  <option value=''>Elige tu genero</option>
+                  <option value='Hombre'>Hombre</option>
+                  <option value='Mujer'>Mujer</option>
+                  <option value='Otro'>Otro</option>
+                </select>
+              </div>
 
-					<form action="/signup" method="POST" class="d-flex">
-						<div class="col-12">
-							<div class="row d-flex align-items-center justify-content-between">
-								<label class="label">Ingresa tu nombre</label>
-								<input type="text" name="nombre" class="form-control col-7" autofocus>
-							</div>
-							<div class="row d-flex align-items-center justify-content-between my-2">
-								<label class="label">Ingresa tu apellido</label>
-								<input type="text" name="apellido" class="form-control col-7" autofocus>
-							</div>
-							<div class="row d-flex align-items-center justify-content-between">
-								<label class="label">Ingresa tu fecha de nacimiento</label>
-								<input type="date" name='date' class="form-control col-7">
-							</div>
+              <div
+                class='row d-flex align-items-center justify-content-between'
+              >
+                <label class='label'>Direccion de correo</label>
+                <input
+                  type='email'
+                  name='email'
+                  class='form-control col-7'
+                  placeholder='ejemplo@mail.com'
+                />
+              </div>
+              <div
+                class='row d-flex align-items-center justify-content-between my-2'
+              >
+                <label class='label' for='password'>Contraseña</label>
+                <input
+                  type='password'
+                  name='password'
+                  class='form-control col-7'
+                  placeholder='Ingrese una contraseña segura'
+                />
+              </div>
 
-							<div class="row d-flex align-items-center justify-content-between my-2">
-								<label for="genero" class="form-label">Selecciona tu genero</label>
-								<input class="form-control col-7" list="generos" name="genero">
-								<datalist id="generos">
-									<option value="Hombre">Hombre</option>
-									<option value="Mujer">Mujer</option>
-									<option value="Otro">Otro</option>
-								</datalist>
-							</div>
+              <div class='row justify-content-end'>
+                <button type='submit' class='btn btn-info submit p-3'>Crear
+                  cuenta</button>
+              </div>
+            </div>
+          </form>
 
-							<div class="row d-flex align-items-center justify-content-between">
-								<label class="label">Direccion de correo</label>
-								<input type="email" name='email' class="form-control col-7"
-									placeholder="ejemplo@mail.com">
-							</div>
-							<div class="row d-flex align-items-center justify-content-between my-2">
-								<label class="label" for="password">Contraseña</label>
-								<input type="password" name="password" class="form-control col-7"
-									placeholder="Ingrese una contraseña segura">
-							</div>
+          <div class='row justify-content-center'>
+            <p>Eres un artista?
+              <a href='/signup/artist'>registrate a nuestros servicios para
+                artistas ahora!</a></p>
+          </div>
 
+        </div>
 
-							<div class="row justify-content-end">
-								<button type="submit" class="btn btn-info submit p-3">Crear cuenta</button>
-							</div>
-						</div>
-					</form>
-
-					<div class="row justify-content-center">
-						<p>Eres un artista? <a href="/signup/artist">registrate a nuestros servicios para artistas
-								ahora!</a></p>
-					</div>
-
-				</div>
-
-				{{!-- <div class="w-100 text-center">
+        {{! <div class="w-100 text-center">
 					<p class="mb-3 text-center">Signup with this services</p>
 					<p class="social-media d-flex justify-content-center">
 						<a href="#"
@@ -73,11 +108,12 @@
 							class="social-icon twitter d-flex align-items-center justify-content-center m-2"><span
 								class="fa fa-twitter"></span></a>
 					</p>
-				</div> --}}
-				<div class="w-100 text-center p-2">
-					<p class="mb-4">Ya tengo una cuenta! <a href="#signin">Iniciar sesion</a></p>
-				</div>
-			</div>
-		</div>
-	</div>
+				</div> }}
+        <div class='w-100 text-center p-2'>
+          <p class='mb-4'>Ya tengo una cuenta!
+            <a href='#signin'>Iniciar sesion</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
 </section>

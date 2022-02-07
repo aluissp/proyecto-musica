@@ -110,7 +110,10 @@ const getFullArtist = async (idArt, idUser) => {
     });
 
     for (const miAlb of misAlbumes) {
-      if (miAlb.albumes_comprados === ultimoLanzamiento.id_alb) {
+      if (
+        ultimoLanzamiento &&
+        miAlb.albumes_comprados === ultimoLanzamiento.id_alb
+      ) {
         ultimoLanzamiento.itsMine = true;
       }
     }

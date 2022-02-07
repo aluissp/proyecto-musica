@@ -148,7 +148,8 @@ router.route('/art/card/edit/:id').post(async (req, res) => {
 router.route('/art/sub/:idplan').post(async (req, res) => {
   const idplan = req.params.idplan;
   const idart = req.user.id_art;
-  const response = await buyPlan(idart, idplan);
+  const { cardBuy } = req.body
+  const response = await buyPlan(idart, idplan, cardBuy);
   if (response) {
     console.log(response);
     req.flash('buy_art_success', response);
