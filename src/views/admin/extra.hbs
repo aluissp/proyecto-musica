@@ -1,0 +1,194 @@
+{{! Configuracion extra }}
+<div class='container my-4 d-flex'>
+  <div class='col-7'>
+    <div class='card border-primary mb-3 px-2'>
+      <h4 class='text-center my-3'>Gestionar géneros musicales</h4>
+      <div class='row mb-3'>
+
+        <form method='POST' class='col-12 ml-1' id='form-1'>
+
+          <div class='input-group'>
+            <input
+              type='text'
+              class='form-control col-8'
+              name='wordkey'
+              placeholder='Ingresa el género musical que quieras buscar o agregar'
+              autofocus
+              required
+            />
+            <button class='btn btn-outline-info' type='submit' id='search-1'>
+              Buscar
+              <i class='fas fa-search ml-1'></i>
+            </button>
+            <button class='btn btn-outline-info ml-2' type='submit' id='add-1'>
+              Añadir
+              <i class='fas fa-plus ml-1'></i>
+            </button>
+          </div>
+
+        </form>
+      </div>
+
+      <h5>Lista de géneros</h5>
+      {{> messageAdmin}}
+      <table class='table table-striped table-hover'>
+        <thead>
+          <tr>
+            <th>
+              <i class='fas fa-sort-numeric-down'></i>
+            </th>
+            <th scope='col'>Género
+              <i class='fas fa-guitar ml-1'></i>
+            </th>
+            <th scope='col'>Editar
+              <i class='fas fa-edit ml-1'></i>
+            </th>
+            <th scope='col'>Borrar
+              <i class='fas fa-trash-alt ml-1'></i>
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {{#each generos}}
+            <tr>
+              <td>
+                {{nro}}
+              </td>
+              <td class='col-5'>
+                <form
+                  action='/admin/extra/gender/update'
+                  id='form-2-{{id_gen}}'
+                  class='d-none'
+                  method='POST'
+                >
+                  <input type='hidden' name='idGen' value='{{id_gen}}' />
+                </form>
+                <input
+                  form='form-2-{{id_gen}}'
+                  type='text'
+                  name='genero'
+                  class='form-control-plaintext'
+                  value='{{nombre_gen}}'
+                />
+
+              </td>
+
+              <td>
+                <button
+                  type='submit'
+                  class='btn btn-primary container-fluid'
+                  form='form-2-{{id_gen}}'
+                >
+                  <i class='fas fa-edit ml-1'></i>
+                </button>
+              </td>
+              <td>
+                <form
+                  action='/admin/extra/gender/delete'
+                  class='d-none'
+                  method='POST'
+                  id='form-3-{{id_gen}}'
+                >
+                  <input type='hidden' name='idGen' value='{{id_gen}}' />
+                </form>
+                <button
+                  type='submit'
+                  form='form-3-{{id_gen}}'
+                  class='btn btn-danger container-fluid'
+                >
+                  <i class='fas fa-trash-alt ml-1'></i>
+                </button>
+              </td>
+
+            </tr>
+          {{/each}}
+        </tbody>
+      </table>
+
+    </div>
+  </div>
+  <div class='col-5'>
+    <div class='card border-primary mb-3 px-2'>
+      <h4 class='text-start my-3'>Gestionar el Impuesto de Valor Agregado</h4>
+      <h5>Impuesto de artista y usuario</h5>
+
+      {{> messageUser}}
+
+      <table class='table table-striped table-hover mt-4'>
+        <thead>
+          <tr>
+            <th>Aplica a
+            </th>
+            <th scope='col'>Impuesto
+              <i class="fas fa-coins ml-1"></i>
+            </th>
+            <th scope='col'>Editar
+              <i class='fas fa-edit ml-1'></i>
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {{#each impuestos}}
+            <tr>
+              <td>
+                {{aplica}}
+              </td>
+              <td class='col-5'>
+                <form
+                  action='/admin/extra/iva/update'
+                  id='form-4-{{id_imp}}'
+                  class='d-none'
+                  method='POST'
+                >
+                  <input type='hidden' name='idImp' value='{{id_imp}}' />
+                </form>
+                <input
+                  form='form-4-{{id_imp}}'
+                  type='number'
+                  step="0.01"
+                  name='valorImp'
+                  class='form-control-plaintext'
+                  value='{{valor_imp}}'
+                />
+
+              </td>
+
+              <td>
+                <button
+                  type='submit'
+                  class='btn btn-primary container-fluid'
+                  form='form-4-{{id_imp}}'
+                >
+                  <i class='fas fa-edit ml-1'></i>
+                </button>
+              </td>
+
+            </tr>
+          {{/each}}
+        </tbody>
+      </table>
+
+
+    </div>
+
+  </div>
+</div>
+{{! /admin/extra/gender/search }}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const search = document.getElementById('search-1');
+    const add = document.getElementById('add-1');
+
+    const form = document.getElementById('form-1');
+
+    const accion = (word) => {
+      form.removeAttribute('action');
+      form.setAttribute('action', `/admin/extra/gender/${word}`);
+    }
+
+    search.onclick = () => accion('search');
+    add.onclick = () => accion('add');
+  });
+</script>

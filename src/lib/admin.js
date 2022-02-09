@@ -713,6 +713,143 @@ const calcularEdad = (fecha) => {
 
   return edad;
 };
+
+const getAllGender = async () => {
+  try {
+    const consulta = await db.query('SELECT * FROM generos');
+    const generos = consulta.rows;
+
+    let i = 1;
+    generos.forEach((genero) => {
+      genero.nro = i;
+      i++;
+    });
+
+    return generos;
+  } catch (e) {
+    console.log(e);
+  }
+};
+
+const insertGender = async (req, genderName) => {
+  try {
+    const consulta = await db.query(
+      `select nombre_gen from generos where nombre_gen = $1`,
+      [genderName]
+    );
+    const response = consulta.rows;
+    if (response.length > 0) {
+      req.flash('messageAdminFail', 'Ya existe un género con ese nombre!');
+    } else {
+      await db.query(`INSERT INTO generos(nombre_gen) VALUES($1)`, [
+        genderName,
+      ]);
+      req.flash('messageAdmin', 'Se registró exitosamente el nuevo género!');
+    }
+  } catch (e) {
+    console.log(e);
+    req.flash(
+      'messageAdminFail',
+      'El ocurrio un error al registrar el nuevo género!'
+    );
+  }
+};
+
+const searchGender = async (req, genderName) => {
+  try {
+    const consulta = await db.query(
+      `SELECT * FROM generos WHERE nombre_gen LIKE '${genderName}%'`
+    );
+    const generos = consulta.rows;
+
+    let i = 1;
+    generos.forEach((genero) => {
+      genero.nro = i;
+      i++;
+    });
+
+    return generos;
+  } catch (e) {
+    req.flash(
+      'messageAdminFail',
+      'El ocurrio un error al buscar los generos coincidentes!'
+    );
+  }
+};
+
+const updateGender = async (req, idGen, genderName) => {
+  try {
+    const consulta = await db.query(
+      `select nombre_gen from generos where nombre_gen = $1`,
+      [genderName]
+    );
+    const response = consulta.rows;
+    if (response.length > 0) {
+      req.flash('messageAdminFail', 'Ya existe un género con ese nombre!');
+    } else {
+      await db.query(`UPDATE generos SET nombre_gen = $1 WHERE id_gen = $2`, [
+        genderName,
+        idGen,
+      ]);
+      req.flash('messageAdmin', 'Se actualizó exitosamente el nuevo género!');
+    }
+  } catch (e) {
+    req.flash(
+      'messageAdminFail',
+      'El ocurrio un error al actualizar el género!'
+    );
+  }
+};
+
+const deleteGender = async (req, idGen) => {
+  try {
+    await db.query('DELETE FROM generos WHERE id_gen = $1', [idGen]);
+    req.flash('messageAdmin', 'Se eliminó exitosamente el género!');
+  } catch (e) {
+    req.flash(
+      'messageAdminFail',
+      'No se puede eliminar este género porque existen albumes registrados con el género!'
+    );
+  }
+};
+
+const getFullIva = async () => {
+  try {
+    const consulta = await db.query('SELECT id_imp, valor_imp FROM impuestos');
+    const impuestos = consulta.rows;
+
+    impuestos.forEach((impuesto) => {
+      if (impuesto.id_imp === 'imp-1') {
+        impuesto.aplica = 'Artistas';
+      } else if (impuesto.id_imp === 'imp-2') {
+        impuesto.aplica = 'Usuarios';
+      }
+    });
+    return impuestos;
+  } catch (e) {
+    console.log(e);
+  }
+};
+
+const updateIva = async (req, idImp, valorImp) => {
+  try {
+    if (valorImp < 0) {
+      req.flash('messageUserFail', 'El impuesto no puede ser negativo!');
+    } else {
+      await db.query(`UPDATE impuestos SET valor_imp = $1 WHERE id_imp = $2`, [
+        valorImp,
+        idImp,
+      ]);
+      req.flash('messageUser', 'Se actualizó correctamente el impuesto!');
+    }
+  } catch (e) {
+    req.flash(
+      'messageUserFail',
+      'El ocurrio un error al actualizar el impuesto!'
+    );
+  }
+};
+
 exports.getLatestSub = getLatestSub;
 exports.getArtistFilter = getArtistFilter;
 exports.getArtistPdf = getArtistPdf;
@@ -730,3 +867,10 @@ exports.getAllBill = getAllBill;
 exports.getBill = getBill;
 exports.getBillDetail = getBillDetail;
 exports.getBillPdf = getBillPdf;
+exports.getAllGender = getAllGender;
+exports.insertGender = insertGender;
+exports.searchGender = searchGender;
+exports.updateGender = updateGender;
+exports.deleteGender = deleteGender;
+exports.getFullIva = getFullIva;
+exports.updateIva = updateIva;

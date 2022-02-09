@@ -20,6 +20,15 @@ const {
   getBill,
   getBillDetail,
   getBillPdf,
+  //Generos
+  getAllGender,
+  insertGender,
+  searchGender,
+  deleteGender,
+  updateGender,
+  //Iva
+  getFullIva,
+  updateIva,
 } = require('../lib/admin');
 
 // Perfil
@@ -161,6 +170,41 @@ router.route('/planes/edit/:idPlan').post(async (req, res) => {
   await updatePlan(req, nombre, descripcion, precio, duracion, idPlan);
 
   res.redirect('/admin/planes');
+});
+
+router.route('/extra').get(async (req, res) => {
+  const impuestos = await getFullIva();
+  const generos = await getAllGender();
+  res.render('admin/extra', { generos, impuestos });
+});
+
+router.route('/extra/gender/search').post(async (req, res) => {
+  const impuestos = await getFullIva();
+  const { wordkey } = req.body;
+  const generos = await searchGender(req, wordkey);
+  res.render('admin/extra', { generos, impuestos });
+});
+router.route('/extra/gender/add').post(async (req, res) => {
+  const { wordkey } = req.body;
+  await insertGender(req, wordkey);
+  res.redirect('/admin/extra');
+});
+
+router.route('/extra/gender/update').post(async (req, res) => {
+  const { idGen, genero } = req.body;
+  await updateGender(req, idGen, genero);
+  res.redirect('/admin/extra');
+});
+router.route('/extra/gender/delete').post(async (req, res) => {
+  const { idGen } = req.body;
+  await deleteGender(req, idGen);
+  res.redirect('/admin/extra');
+});
+
+router.route('/extra/iva/update').post(async (req, res) => {
+  const { idImp, valorImp } = req.body;
+  await updateIva(req, idImp, valorImp);
+  res.redirect('/admin/extra');
 });
 
 exports.router = router;

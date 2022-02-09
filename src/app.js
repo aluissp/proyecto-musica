@@ -62,7 +62,7 @@ app.use((req, res, next) => {
   // console.log('estoy en global');
   // console.log(req.user);
 
-  // All message for artist
+  // All message for admin
   app.locals.messageAdmin = req.flash('messageAdmin');
   app.locals.messageAdminFail = req.flash('messageAdminFail');
 
