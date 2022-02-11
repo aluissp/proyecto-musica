@@ -17,6 +17,44 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
+-- Name: albumes_comprados(character varying); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.albumes_comprados(idusu character varying) RETURNS TABLE(id_albumes character varying)
+    LANGUAGE plpgsql
+    AS $$
+begin
+return query
+select d.id_alb from detalles_facturas as d
+inner join facturas as f on d.codigo_fac=f.codigo_fac where id_usu=idusu;
+end;
+$$;
+
+
+ALTER FUNCTION public.albumes_comprados(idusu character varying) OWNER TO postgres;
+
+--
+-- Name: completar_factura(character varying, character varying, character varying); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.completar_factura(idalb character varying, idusu character varying, idfac character varying) RETURNS void
+    LANGUAGE plpgsql
+    AS $$
+declare
+cantidad smallint = count(*) from canciones where id_alb=idalb;
+subtotal double precision = (select precio_alb from albumes where id_alb=idalb);
+iva double precision = subtotal * (select valor_imp from impuestos where id_imp='imp-2');
+total double precision = (subtotal + iva);
+begin
+insert into detalles_facturas values (idfac,idalb,cantidad,'Un albúm de '||cantidad||' canciones');
+update facturas set subtotal_fac = subtotal,iva_fac = iva,total_fac = total where codigo_fac = idfac;
+end;
+$$;
+
+
+ALTER FUNCTION public.completar_factura(idalb character varying, idusu character varying, idfac character varying) OWNER TO postgres;
+
+--
 -- Name: f_val_date(date); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -88,6 +126,23 @@ $_$;
 ALTER FUNCTION public.f_val_num(text) OWNER TO postgres;
 
 --
+-- Name: obtener_ultimoidfac(character varying); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.obtener_ultimoidfac(iduser character varying) RETURNS character varying
+    LANGUAGE plpgsql
+    AS $$
+declare
+id_fac varchar = (select codigo_fac from facturas where id_usu=idUser ORDER BY codigo_fac DESC LIMIT 1);
+begin
+return id_fac;
+end;
+$$;
+
+
+ALTER FUNCTION public.obtener_ultimoidfac(iduser character varying) OWNER TO postgres;
+
+--
 -- Name: t_act_alb(); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -148,6 +203,75 @@ end $$;
 ALTER FUNCTION public.t_act_alb_insert() OWNER TO postgres;
 
 --
+-- Name: t_delete_generos(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.t_delete_generos() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+begin
+if exists(select id_gen from albumes where id_gen=old.id_gen) then
+raise exception 'No se puede eliminar este género porque existen albumes registrados con el género';
+end if;
+return old;
+end;
+$$;
+
+
+ALTER FUNCTION public.t_delete_generos() OWNER TO postgres;
+
+--
+-- Name: t_delete_planes(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.t_delete_planes() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+begin
+if exists (select id_pl from suscripciones where id_pl=old.id_pl) then
+raise exception 'No se puede borrar el plan porque hay artistas que ya compraron el plan';
+end if;
+return old;
+end;
+$$;
+
+
+ALTER FUNCTION public.t_delete_planes() OWNER TO postgres;
+
+--
+-- Name: t_val_admin(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.t_val_admin() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+begin
+	if (TG_OP='INSERT') then
+		if length (new.id_adm) > 0 then
+			raise exception 'El id_adm lo asigna el sistema';
+		end if;
+		if exists (select id_adm from administradores where id_adm=new.id_adm) then
+			raise exception 'El correo ya fue registrado';
+		end if;
+		new.id_adm='admin-'||nextval('sec_admin');
+	end if;
+	---------------------------------------------
+	if (TG_OP='UPDATE') then
+		if new.id_adm <> old.id_adm then
+			raise exception 'El id_adm lo controla el sistema';
+		end if;
+		if exists (select id_adm from administradores where id_adm=new.id_adm) then
+			raise exception 'El correo ya fue registrado';
+		end if;
+	end if;
+	return new;
+end;
+$$;
+
+
+ALTER FUNCTION public.t_val_admin() OWNER TO postgres;
+
+--
 -- Name: t_val_alb(); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -164,7 +288,7 @@ begin
 	if length (new.nombre_alb) = 0 then
 		raise exception 'El nombre_alb es un campo obligatorio';
 	end if;	
-	if length (new.genero_alb) = 0 then
+	if length (new.id_alb) = 0 then
 		raise exception 'El genero es un campo obligatorio';
 	end if;
 	if new.precio_alb < 0 then
@@ -328,6 +452,97 @@ $$;
 ALTER FUNCTION public.t_val_can() OWNER TO postgres;
 
 --
+-- Name: t_val_fac(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.t_val_fac() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+begin
+	if (TG_OP='INSERT') then
+		if length (new.codigo_fac) > 0 then
+			raise exception 'El código de factura lo asigna el sistema';
+		end if;
+		if not exists (select id_usu from usuarios where id_usu=new.id_usu) then 
+			raise exception 'El id_usu no existe en la tabla usuarios';
+		end if;
+		if new.fechaemision_fac <> current_date then
+			raise exception 'La fecha de la factura debe ser la fecha actual';
+		end if;
+		if new.subtotal_fac < 0 then 
+			raise exception 'El subtotal no debe ser menor a 0';
+		end if;
+		if new.iva_fac <> 0 then
+			raise exception 'El iva lo controla el sistema';			
+		end if;
+		if new.total_fac <> 0 then
+			raise exception 'El total lo controla el sistema';
+		end if;
+		new.fechaemision_fac:= current_date;
+		new.codigo_fac:='fac-'||nextval('sec_fac');
+	end if;
+	------------------------------------------------------------
+	if (TG_OP='UPDATE') then
+		if new.codigo_fac <> old.codigo_fac then
+			raise exception 'El codigo de factura no se puede modificar';
+		end if;
+		if new.id_usu <> old.id_usu then
+			raise exception 'El id_usu no se puede modificiar';
+		end if;
+		if new.subtotal_fac <> old.subtotal_fac then
+			if new.subtotal_fac < 0 then
+				raise exception 'El valor no debe ser menor a 0';
+			end if;
+		end if;
+	end if;
+	
+	return new;
+end;
+$$;
+
+
+ALTER FUNCTION public.t_val_fac() OWNER TO postgres;
+
+--
+-- Name: t_val_gen(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.t_val_gen() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+begin
+--------------------------------
+if (TG_OP='INSERT') then
+if length(new.id_gen) > 0 then
+raise exception 'El id_gen lo controla el sistema';
+end if;
+if length(new.nombre_gen) = 0 then
+raise exception 'El nombre del género es un campo obligatorio';
+end if;
+if exists (select nombre_gen from generos where nombre_gen=new.nombre_gen) then
+raise exception 'Ya existe un género con ese nombre';
+end if;
+new.nombre_gen:=upper(new.nombre_gen);
+new.id_gen:='gen-'||nextval('sec_gen');
+end if;
+---------------------------
+if (TG_OP='UPDATE') then
+if new.id_gen <> old.id_gen then
+raise exception 'El id_gen no se puede modificar';
+end if;
+if exists (select nombre_gen from generos where nombre_gen=new.nombre_gen) then
+raise exception 'Ya existe un género con ese nombre';
+end if;
+new.nombre_gen:=upper(new.nombre_gen);
+end if;
+return new;
+end;
+$$;
+
+
+ALTER FUNCTION public.t_val_gen() OWNER TO postgres;
+
+--
 -- Name: t_val_pla(); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -400,7 +615,7 @@ begin
 		end if;						
 		new.ffin_sus:= date (new.finico_sus) + (select duracion_pl from planes where id_pl=new.id_pl);
 		new.subtotal_sus:= (select precio_pl from planes where id_pl=new.id_pl);
-		new.iva_sus:= new.subtotal_sus * 0.12;
+		new.iva_sus:= new.subtotal_sus * (select valor_imp from impuestos where id_imp='imp-1');
 		new.total_sus:= new.subtotal_sus + new.iva_sus;
 		new.id_sus:='sus-'||nextval('sec_sus');
 	end if;
@@ -465,9 +680,141 @@ $$;
 
 ALTER FUNCTION public.t_val_tar_art() OWNER TO postgres;
 
+--
+-- Name: t_val_tar_usu(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.t_val_tar_usu() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+begin
+	if (TG_OP='INSERT') then 
+		if length (new.id_tar)>0 then 
+			raise exception 'no debe escribir un id de tarjeta, lo asigna el sistema'; 
+		end if;	
+		if not exists (select id_usu from usuarios where id_usu = new.id_usu ) then
+			raise exception 'no existe el usuario en la tabla usuarios';
+		end if;
+		if length (new.tipo_tar)=0 then
+			raise exception 'ingrese un tipo de tarjeta por favor';
+		end if;
+		if length (new.numero_tar)<> 16 then
+			raise exception 'el número de tarjeta debe ser de 16 dígitos'; 	
+		end if;
+		if exists (select numero_tar from tarjetas_usuarios where numero_tar = new.numero_tar ) then
+			raise exception 'El número de tarjeta ya fue registrado';
+		end if;
+		if new.fcaducidad_tar < current_date then
+			raise exception 'ingrese una fecha de caducidad mayor a la fecha actual';
+		end if;
+		new.id_tar:='tar-'||nextval('sec_tar_usu');
+	end if;
+	---------------------------------------------------
+	if (TG_OP='UPDATE') then
+		if new.id_tar <> old.id_tar then
+			raise exception 'no se puede modificar el id_tar';
+		end if;
+		if new.id_usu <> old.id_usu then
+			raise exception 'no se puede modificar el id_usu';
+		end if;
+		if new.tipo_tar <> old.tipo_tar then
+			if length (new.tipo_tar)=0 then
+				raise exception 'ingrese un tipo de tarjeta por favor';
+			end if;
+		end if;
+		if new.numero_tar <> old.numero_tar then
+			if length (new.numero_tar)<> 16 then
+				raise exception 'el número de tarjeta debe ser de 16 dígitos'; 	
+			end if;
+			if exists (select numero_tar from usuarios where numero_tar = new.numero_tar ) then
+				raise exception 'El número de tarjeta ya fue registrado';
+			end if;
+		end if;
+		if new.fcaducidad_tar <> old.fcaducidad_tar then
+			if new.fcaducidad_tar < current_date then
+				raise exception 'ingrese una fecha de caducidad mayor a la fecha actual';
+			end if;
+		end if;
+	end if;
+	return new;
+end;
+$$;
+
+
+ALTER FUNCTION public.t_val_tar_usu() OWNER TO postgres;
+
+--
+-- Name: t_val_user(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.t_val_user() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+begin
+	--------------------------------
+		if (TG_OP='INSERT') then
+		if length (new.id_usu) > 0 then
+			raise exception 'El id_usu lo asigna el sistema';
+		end if;
+		if exists (select email_usu from usuarios where id_usu=new.id_usu) then
+			raise exception 'El correo ya fue registrado';
+		end if;
+		if f_val_email(new.email_usu) = false then
+		raise exception 'Escribir un correo válido';
+		end if;
+		new.id_usu='usu-'||nextval('sec_user');
+	end if;
+	---------------------------------------------
+	if (TG_OP='UPDATE') then
+		if new.id_usu <> old.id_usu then
+			raise exception 'El id_usu lo controla el sistema';
+		end if;
+		if exists (select email_usu from usuarios where id_usu=new.id_usu) then
+			raise exception 'El correo ya fue registrado';
+		end if;
+		if f_val_email(new.email_usu) = false then
+		raise exception 'Escribir un correo válido';
+		end if;
+		
+	end if;
+	return new;
+end;
+$$;
+
+
+ALTER FUNCTION public.t_val_user() OWNER TO postgres;
+
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
+
+--
+-- Name: personas; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.personas (
+    nombres character varying(50),
+    apellidos character varying(50),
+    genero character varying(20),
+    fecha_nacim date
+);
+
+
+ALTER TABLE public.personas OWNER TO postgres;
+
+--
+-- Name: administradores; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.administradores (
+    id_adm character varying(15) NOT NULL,
+    email_usu character varying(50) NOT NULL,
+    contrasena_usu character varying(50) NOT NULL
+)
+INHERITS (public.personas);
+
+
+ALTER TABLE public.administradores OWNER TO postgres;
 
 --
 -- Name: albumes; Type: TABLE; Schema: public; Owner: postgres
@@ -478,9 +825,9 @@ CREATE TABLE public.albumes (
     id_art character varying(10),
     nombre_alb character varying(50) NOT NULL,
     numpistas_alb smallint,
-    genero_alb character varying(50) NOT NULL,
     precio_alb double precision NOT NULL,
-    fecha_alb date
+    fecha_alb date,
+    id_gen character varying(10)
 );
 
 
@@ -537,14 +884,40 @@ ALTER TABLE public.detalles_facturas OWNER TO postgres;
 CREATE TABLE public.facturas (
     codigo_fac character varying(10) NOT NULL,
     id_usu character varying(10),
-    fechaemision_fac date NOT NULL,
-    subtotal_fac double precision NOT NULL,
-    iva_fac double precision NOT NULL,
-    total_fac double precision NOT NULL
+    fechaemision_fac date,
+    subtotal_fac double precision,
+    iva_fac double precision,
+    total_fac double precision,
+    tarjeta_fac character varying(16)
 );
 
 
 ALTER TABLE public.facturas OWNER TO postgres;
+
+--
+-- Name: generos; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.generos (
+    id_gen character varying(10) NOT NULL,
+    nombre_gen character varying(50) NOT NULL
+);
+
+
+ALTER TABLE public.generos OWNER TO postgres;
+
+--
+-- Name: impuestos; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.impuestos (
+    id_imp character varying(10) NOT NULL,
+    nombre_imp character varying(50) NOT NULL,
+    valor_imp double precision NOT NULL
+);
+
+
+ALTER TABLE public.impuestos OWNER TO postgres;
 
 --
 -- Name: planes; Type: TABLE; Schema: public; Owner: postgres
@@ -560,6 +933,28 @@ CREATE TABLE public.planes (
 
 
 ALTER TABLE public.planes OWNER TO postgres;
+
+--
+-- Name: sec_admin; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.sec_admin
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.sec_admin OWNER TO postgres;
+
+--
+-- Name: sec_admin; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.sec_admin OWNED BY public.administradores.id_adm;
+
 
 --
 -- Name: sec_alb; Type: SEQUENCE; Schema: public; Owner: postgres
@@ -628,6 +1023,50 @@ ALTER SEQUENCE public.sec_can OWNED BY public.canciones.id_can;
 
 
 --
+-- Name: sec_fac; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.sec_fac
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.sec_fac OWNER TO postgres;
+
+--
+-- Name: sec_fac; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.sec_fac OWNED BY public.facturas.codigo_fac;
+
+
+--
+-- Name: sec_gen; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.sec_gen
+    AS integer
+    START WITH 9
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.sec_gen OWNER TO postgres;
+
+--
+-- Name: sec_gen; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.sec_gen OWNED BY public.generos.id_gen;
+
+
+--
 -- Name: sec_pla; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -661,7 +1100,8 @@ CREATE TABLE public.suscripciones (
     ffin_sus date NOT NULL,
     subtotal_sus double precision NOT NULL,
     iva_sus double precision NOT NULL,
-    total_sus double precision NOT NULL
+    total_sus double precision NOT NULL,
+    tarjeta_fac character varying(16)
 );
 
 
@@ -727,19 +1167,6 @@ ALTER SEQUENCE public.sec_tar_art OWNED BY public.tarjetas_artistas.id_tar;
 
 
 --
--- Name: session; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.session (
-    sid character varying NOT NULL,
-    sess json NOT NULL,
-    expire timestamp(6) without time zone NOT NULL
-);
-
-
-ALTER TABLE public.session OWNER TO postgres;
-
---
 -- Name: tarjetas_usuarios; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -755,37 +1182,104 @@ CREATE TABLE public.tarjetas_usuarios (
 ALTER TABLE public.tarjetas_usuarios OWNER TO postgres;
 
 --
+-- Name: sec_tar_usu; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.sec_tar_usu
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.sec_tar_usu OWNER TO postgres;
+
+--
+-- Name: sec_tar_usu; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.sec_tar_usu OWNED BY public.tarjetas_usuarios.id_tar;
+
+
+--
 -- Name: usuarios; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public.usuarios (
     id_usu character varying(10) NOT NULL,
-    nombre_usu character varying(50) NOT NULL,
-    apellido_usu character varying(50) NOT NULL,
     email_usu character varying(50) NOT NULL,
-    contrasena_usu character varying(50) NOT NULL,
-    fnacimiento_usu date NOT NULL,
-    genero_usu character varying(15) NOT NULL
-);
+    contrasena_usu character varying(50) NOT NULL
+)
+INHERITS (public.personas);
 
 
 ALTER TABLE public.usuarios OWNER TO postgres;
 
 --
+-- Name: sec_user; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.sec_user
+    AS integer
+    START WITH 2
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.sec_user OWNER TO postgres;
+
+--
+-- Name: sec_user; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.sec_user OWNED BY public.usuarios.id_usu;
+
+
+--
+-- Name: session; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.session (
+    sid character varying NOT NULL,
+    sess json NOT NULL,
+    expire timestamp(6) without time zone NOT NULL
+);
+
+
+ALTER TABLE public.session OWNER TO postgres;
+
+--
+-- Data for Name: administradores; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.administradores (nombres, apellidos, genero, fecha_nacim, id_adm, email_usu, contrasena_usu) FROM stdin;
+Alberto	Rodrigez	Hombre	1998-09-25	admin-1	roalberto@mail.com	alberto1234
+Alicia	de la Torre	Mujer	1998-04-05	admin-3	alicia@mail.com	hola
+Alvaro	Martinez	Hombre	2002-02-25	admin-4	alvaro@mail.com	admin-alvaro
+\.
+
+
+--
 -- Data for Name: albumes; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.albumes (id_alb, id_art, nombre_alb, numpistas_alb, genero_alb, precio_alb, fecha_alb) FROM stdin;
-alb-6	art-5	ALONE	3	RAP & HIP HOP	80	2019-09-12
-alb-4	art-5	LOBO NEGRO I	6	RAP & HIP HOP	74.99	2019-05-12
-alb-5	art-5	LOBO NEGRO II	4	RAP & HIP HOP	80	2019-09-12
-alb-3	art-3	FIESTA III	2	ALTERNATIVO	50	2022-01-16
-alb-2	art-3	FIESTA II	4	ALTERNATIVO	50	2021-01-23
-alb-1	art-3	FIESTA I	3	ALTERNATIVO	49.99	2002-01-23
-alb-7	art-3	MIX III	2	CHICHA	12	2022-01-05
-alb-8	art-7	Nucleos Activos Imaginarios	11	Alternative	10.5	2013-01-05
-alb-9	art-7	Epicentro en Vivo	2	Indie	1.4	2015-01-14
-alb-12	art-12	Nuevo Amanecer	2	Folk	3.5	2022-01-06
+COPY public.albumes (id_alb, id_art, nombre_alb, numpistas_alb, precio_alb, fecha_alb, id_gen) FROM stdin;
+alb-29	art-17	Guardarraya	9	4.5	2000-04-02	gen-4
+alb-30	art-17	La diabla	2	2.5	2018-05-06	gen-6
+alb-31	art-7	Proyecto 2022	0	7.5	2022-02-04	gen-17
+alb-18	art-7	Epicentro en Vivo	2	5.5	2022-01-15	gen-6
+alb-19	art-13	Pistola de Balin	13	12.5	2018-02-09	gen-4
+alb-20	art-15	Un futuro mejor	6	9.99	2020-06-06	gen-1
+alb-21	art-15	Robormiga	10	9.99	2015-02-03	gen-1
+alb-8	art-7	Nucleos Activos Imaginarios	12	10.5	2013-01-05	gen-4
+alb-25	art-16	FIESTA	0	49.99	2002-01-23	gen-6
+alb-26	art-16	FIESTA II	0	50	2021-01-23	gen-6
+alb-27	art-16	FIESTA III	0	50	2022-01-16	gen-6
+alb-28	art-16	LP	0	80	2019-09-12	gen-6
 \.
 
 
@@ -794,18 +1288,12 @@ alb-12	art-12	Nuevo Amanecer	2	Folk	3.5	2022-01-06
 --
 
 COPY public.artistas (id_art, seudonimo_art, email_art, contrasena_art, pais_art) FROM stdin;
-art-1	EMINEM	eminem@music.com	contraseña	ESTADOS UNIDOS
-art-2	POMME	chanson@music.fr	contraseña1	FRANCIA
-art-3	DROOW	akaa@droow.es	contraseña2	CHILE
-art-4	CRISTINA AGUILAR	operacion@musical.mex	contraseña2	MEXICO
-art-5	AMBKOR	lobonegro@music.com	contraseña8	ESPAÑA
-art-6	COEUR DE PIRATE	rock@star.es	contraseña	CANADA
-art-8	Da pawn 	dapawn@mail.com	sapawn1234	Ecuador
-art-9	Tripulacion de osos	latri@mail.com	latri12345	Ecuador
-art-10	Alkaloides	alkaloides@mail.com	lakaloides	Ecuador
 art-7	Mundos	mundos@mail.com	mundos1234	Ecuador
-art-11	Chayane	chayane@gmail.com	chayane1234	Puerto Rico
-art-12	Gerardo Moran	gerardo@mail.com	gerardo1234	Ecuador
+art-13	Da pawn	dapawn@mail.com	dapawn1234	Ecuador
+art-14	Lil Pump	lil69@mail.com	lil123456789	EEUU
+art-15	Tripulacion de Osos	latri@gmail.com	latri12345	Ecuador
+art-16	Orquesta Joven	orquestajoven@mail.com	orquesta1234	Panama
+art-17	Guardarraya	guardarraya@mail.com	gardarraya1234	Ecuador
 \.
 
 
@@ -814,33 +1302,39 @@ art-12	Gerardo Moran	gerardo@mail.com	gerardo1234	Ecuador
 --
 
 COPY public.canciones (id_can, id_alb, nombre_can, duracion_can, nropista_can) FROM stdin;
-can-1	alb-6	Temblando	00:04:20	1
-can-2	alb-6	Verte otra vez	00:02:30	2
-can-3	alb-6	Viento	00:03:00	3
-can-5	alb-5	Por Dentro	00:05:23	2
-can-4	alb-5	Mi suerte	00:06:00	1
-can-7	alb-5	Si nos cruzamos	00:04:01	3
-can-8	alb-4	Lobo Negro	00:03:33	1
-can-9	alb-4	Difícil feat Beret	00:03:56	2
-can-10	alb-4	Llévame	00:03:56	3
-can-11	alb-4	Bébeme	00:05:01	4
-can-12	alb-4	Buenas Noches	00:06:00	5
-can-13	alb-4	Vuelve feat Dante	00:04:15	6
-can-14	alb-5	Llévame contigo	00:04:15	4
-can-15	alb-3	Party	00:04:20	1
-can-16	alb-3	Not party	00:04:20	2
-can-17	alb-2	I	00:01:00	1
-can-18	alb-2	LOVE	00:01:00	2
-can-19	alb-2	YOU	00:02:00	3
-can-20	alb-2	BABY	00:03:00	4
-can-21	alb-1	YO	00:03:00	1
-can-22	alb-1	TE	00:02:00	2
-can-23	alb-1	AMO	00:01:00	3
-can-24	alb-7	Sanjuanjito mix 1	01:04:00	1
+can-53	alb-8	Nopal	00:03:15	12
+can-69	alb-18	Natural	00:03:05	1
+can-70	alb-18	KKK	00:02:53	2
+can-71	alb-19	La ultima oportunidad	00:04:58	1
+can-72	alb-19	Balsa	00:03:42	2
+can-73	alb-19	Pistola de balin	00:04:46	3
+can-74	alb-19	La muerte	00:05:50	4
+can-75	alb-19	Tres	00:04:11	5
+can-76	alb-19	Crimen	00:04:41	6
+can-77	alb-19	Rutas para no volver	00:04:22	7
 can-29	alb-8	Oruga	00:03:50	2
 can-30	alb-8	Artemia	00:02:55	3
 can-31	alb-8	Luciernagas	00:04:30	4
-can-42	alb-7	Bailables	00:03:06	2
+can-78	alb-19	Cometas	00:04:29	8
+can-79	alb-19	Un momento	00:03:36	9
+can-80	alb-19	Final violento	00:03:27	10
+can-81	alb-19	Helio	00:04:11	11
+can-82	alb-19	Gelatina	00:02:57	12
+can-83	alb-19	Voces difusas	00:11:34	13
+can-84	alb-20	Kilimanjaro	00:03:05	1
+can-85	alb-20	Fin de mes	00:02:16	2
+can-86	alb-20	Luana	00:03:30	3
+can-87	alb-20	Tren de vidas pasadas	00:02:27	4
+can-88	alb-20	Ariel	00:03:32	5
+can-89	alb-20	Nada que hacer	00:03:14	6
+can-90	alb-21	Robormiga	00:03:32	1
+can-91	alb-21	Un espejo	00:02:42	2
+can-92	alb-21	Fantasma	00:02:40	3
+can-93	alb-21	Corriente aparente	00:03:32	4
+can-94	alb-21	Cumpleaños	00:02:53	5
+can-95	alb-21	11 Chinas Hacen Pirámide en una Bicicleta	00:02:53	6
+can-96	alb-21	Cavernícolas Dando a Luz	00:02:46	7
+can-97	alb-21	Consumidor Final	00:03:40	8
 can-28	alb-8	Atomos	00:03:10	1
 can-33	alb-8	Mantis	00:05:30	5
 can-34	alb-8	Mantarraya	00:03:31	6
@@ -849,10 +1343,19 @@ can-36	alb-8	Sombras	00:05:42	8
 can-37	alb-8	Cuervos	00:05:05	9
 can-38	alb-8	Nocturna	00:04:22	10
 can-39	alb-8	Gorriones	00:06:02	11
-can-46	alb-9	Natural	00:03:54	1
-can-50	alb-9	Tiempos de pandemia	00:05:03	2
-can-51	alb-12	Tu sonrisa	00:06:02	1
-can-52	alb-12	Destello de luz	00:03:00	2
+can-98	alb-21	Cavaletti	00:03:19	9
+can-99	alb-21	El Piloto Comprometió la Integridad Física	00:05:20	10
+can-100	alb-29	Muestra gratis	00:01:06	1
+can-101	alb-29	Hombre Cuerdo	00:03:16	2
+can-102	alb-29	Big Bang	00:04:06	3
+can-103	alb-29	Sonriendo asustadito	00:00:49	4
+can-104	alb-29	Háblame mas suave	00:04:24	5
+can-105	alb-29	Los verdes	00:04:57	6
+can-106	alb-29	Oil	00:03:30	7
+can-107	alb-29	Peligro inflamable	00:03:19	8
+can-108	alb-29	Pepe grillo	00:02:36	9
+can-109	alb-30	La diabla	00:04:25	1
+can-110	alb-30	Retorno	00:03:55	2
 \.
 
 
@@ -861,6 +1364,14 @@ can-52	alb-12	Destello de luz	00:03:00	2
 --
 
 COPY public.detalles_facturas (codigo_fac, id_alb, cantidad_fac, descripcion_fac) FROM stdin;
+fac-28	alb-18	2	Un albúm de 2 canciones
+fac-29	alb-8	12	Un albúm de 12 canciones
+fac-30	alb-19	2	Un albúm de 2 canciones
+fac-31	alb-20	6	Un albúm de 6 canciones
+fac-32	alb-20	6	Un albúm de 6 canciones
+fac-33	alb-21	10	Un albúm de 10 canciones
+fac-34	alb-18	2	Un albúm de 2 canciones
+fac-35	alb-8	12	Un albúm de 12 canciones
 \.
 
 
@@ -868,7 +1379,64 @@ COPY public.detalles_facturas (codigo_fac, id_alb, cantidad_fac, descripcion_fac
 -- Data for Name: facturas; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.facturas (codigo_fac, id_usu, fechaemision_fac, subtotal_fac, iva_fac, total_fac) FROM stdin;
+COPY public.facturas (codigo_fac, id_usu, fechaemision_fac, subtotal_fac, iva_fac, total_fac, tarjeta_fac) FROM stdin;
+fac-28	usu-1	2022-02-06	5.5	0.6599999999999999	6.16	1111133337779995
+fac-29	usu-1	2022-02-06	10.5	1.26	11.76	5555559999878756
+fac-30	usu-1	2022-02-07	2.5	0.3	2.8	1111133337779995
+fac-31	usu-1	2022-02-07	9.99	1.1988	11.1888	7778884442223369
+fac-32	usu-2	2022-02-07	9.99	1.1988	11.1888	8956237845129563
+fac-33	usu-2	2022-02-07	9.99	1.1988	11.1888	8956237845129563
+fac-34	usu-3	2022-02-09	5.5	0.6599999999999999	6.16	1111111111111111
+fac-35	usu-3	2022-02-09	10.5	1.26	11.76	1111111111111111
+\.
+
+
+--
+-- Data for Name: generos; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.generos (id_gen, nombre_gen) FROM stdin;
+gen-1	ROCK
+gen-2	POP
+gen-5	LATINO
+gen-6	INDIE
+gen-7	OPERA
+gen-4	ALTERNATIVO
+gen-10	REGGE
+gen-11	REGGAE
+gen-12	POP LATINO
+gen-13	TRAP
+gen-14	TRAP LATINO
+gen-15	FOLK
+gen-16	CHANSON
+gen-17	FOLKLORE
+gen-18	ROCK POP
+gen-19	NEOCLÁSICA
+gen-20	MINIMALISTA
+gen-21	CRISTIANO
+gen-22	ROCK CRISTIANO
+gen-23	LATIN
+gen-24	RAP
+gen-25	RAP & HIP HOP
+gen-26	HIP HOP
+\.
+
+
+--
+-- Data for Name: impuestos; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.impuestos (id_imp, nombre_imp, valor_imp) FROM stdin;
+imp-1	iva artista	0.15
+imp-2	iva usuarios	0.12
+\.
+
+
+--
+-- Data for Name: personas; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.personas (nombres, apellidos, genero, fecha_nacim) FROM stdin;
 \.
 
 
@@ -889,8 +1457,8 @@ pl-4	Plan Platino	Plan de 1 año en la página	74.99	365
 --
 
 COPY public.session (sid, sess, expire) FROM stdin;
-9UzVjX4iMCMAWEE-kMGATXvtDxlXeGAS	{"cookie":{"originalMaxAge":null,"expires":null,"httpOnly":true,"path":"/"},"flash":{}}	2022-01-26 06:17:17
-GFquiuXYom-N7WXaH-NWouEoTYzV4-MM	{"cookie":{"originalMaxAge":null,"expires":null,"httpOnly":true,"path":"/"},"flash":{"success":["BienvenidoMundos","BienvenidoMundos","BienvenidoMundos"]},"passport":{"user":"art-12"}}	2022-01-26 15:33:55
+4Yi_lFIoTCbJYirbmhv8y6VoitG5q96u	{"cookie":{"originalMaxAge":null,"expires":null,"httpOnly":true,"path":"/"},"flash":{"success":["Bienvenido Alberto","BienvenidoMundos","Bienvenido Alberto"]},"passport":{}}	2022-02-10 13:24:51
+XPmNj51iKrovPFIGnHz4x0MWHPa0vZd_	{"cookie":{"originalMaxAge":null,"expires":null,"httpOnly":true,"path":"/"},"flash":{"success":["Bienvenido Alberto","BienvenidoMundos","Bienvenido Alberto","Bienvenido Alberto","BienvenidoMundos"],"error":["Missing credentials","Missing credentials"]},"passport":{"user":"art-16"}}	2022-02-10 03:10:49
 \.
 
 
@@ -898,21 +1466,15 @@ GFquiuXYom-N7WXaH-NWouEoTYzV4-MM	{"cookie":{"originalMaxAge":null,"expires":null
 -- Data for Name: suscripciones; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.suscripciones (id_sus, id_art, id_pl, finico_sus, ffin_sus, subtotal_sus, iva_sus, total_sus) FROM stdin;
-sus-1	art-3	pl-4	2022-01-17	2023-01-17	74.99	8.9988	83.9888
-sus-2	art-5	pl-1	2022-01-17	2022-02-17	19.99	2.3987999999999996	22.388799999999996
-sus-3	art-6	pl-3	2022-01-17	2022-07-16	49.99	5.9988	55.988800000000005
-sus-4	art-1	pl-2	2022-01-17	2022-03-19	29.99	3.5987999999999998	33.5888
-sus-5	art-7	pl-1	2020-01-05	2020-02-05	19.99	2.3987999999999996	22.388799999999996
-sus-6	art-7	pl-2	2020-03-05	2020-05-05	29.99	3.5987999999999998	33.5888
-sus-7	art-7	pl-3	2020-06-06	2020-12-03	49.99	5.9988	55.988800000000005
-sus-9	art-7	pl-1	2022-01-21	2022-02-21	19.99	2.3987999999999996	22.388799999999996
-sus-10	art-8	pl-1	2022-01-23	2022-02-23	19.99	2.3987999999999996	22.388799999999996
-sus-11	art-4	pl-2	2022-01-23	2022-03-25	29.99	3.5987999999999998	33.5888
-sus-12	art-2	pl-4	2022-01-23	2023-01-23	74.99	8.9988	83.9888
-sus-13	art-10	pl-1	2022-01-23	2022-02-23	19.99	2.3987999999999996	22.388799999999996
-sus-14	art-11	pl-4	2022-01-24	2023-01-24	74.99	8.9988	83.9888
-sus-15	art-12	pl-3	2022-01-25	2022-07-24	49.99	5.9988	55.988800000000005
+COPY public.suscripciones (id_sus, id_art, id_pl, finico_sus, ffin_sus, subtotal_sus, iva_sus, total_sus, tarjeta_fac) FROM stdin;
+sus-5	art-7	pl-1	2020-01-05	2020-02-05	19.99	2.3987999999999996	22.388799999999996	1010111876221333
+sus-6	art-7	pl-2	2020-03-05	2020-05-05	29.99	3.5987999999999998	33.5888	1010991876243333
+sus-7	art-7	pl-3	2020-06-06	2020-12-03	49.99	5.9988	55.988800000000005	1010991876243333
+sus-9	art-7	pl-1	2022-01-21	2022-02-21	19.99	2.3987999999999996	22.388799999999996	1010111876221333
+sus-16	art-13	pl-4	2022-01-26	2023-01-26	74.99	8.9988	83.9888	9876543218524561
+sus-17	art-14	pl-4	2022-02-06	2023-02-06	74.99	11.248499999999998	86.23849999999999	1234567891354896
+sus-18	art-15	pl-1	2022-02-06	2022-03-09	19.99	2.9984999999999995	22.9885	2233344558877695
+sus-19	art-17	pl-1	2022-02-09	2022-03-12	19.99	2.9984999999999995	22.9885	5612314506004530
 \.
 
 
@@ -921,27 +1483,17 @@ sus-15	art-12	pl-3	2022-01-25	2022-07-24	49.99	5.9988	55.988800000000005
 --
 
 COPY public.tarjetas_artistas (id_tar, id_art, tipo_tar, numero_tar, fcaducidad) FROM stdin;
-tar-art-1	art-3	Tarjeta de debito	0000111122223333	2022-06-23
-tar-art-2	art-3	Tarjeta de crédito	0000111122224444	2022-06-23
-tar-art-3	art-2	Tarjeta de debito	1000111122223333	2022-06-23
-tar-art-4	art-1	Tarjeta de crédito	1000111122224444	2022-06-23
-tar-art-5	art-2	Tarjeta de debito	1010111122223333	2022-05-23
-tar-art-6	art-1	Tarjeta de crédito	1010111122224444	2022-08-23
-tar-art-7	art-4	Tarjeta de debito	1010111022223333	2022-10-13
-tar-art-8	art-5	Tarjeta de crédito	1010113122224444	2022-08-03
-tar-art-9	art-5	Tarjeta de debito	1010111022221333	2022-10-13
-tar-art-10	art-4	Tarjeta de crédito	1010113122214444	2022-08-03
-tar-art-11	art-6	Tarjeta de crédito	1010113126214444	2022-08-03
 tar-art-12	art-7	Tarjeta de debito	1010111876221333	2023-10-10
-tar-art-15	art-8	Tarjeta de debito	1234567891035496	2023-01-01
 tar-art-14	art-7	Tarjeta de crédito	1010991876243333	2024-02-02
 tar-art-13	art-7	Tarjeta de debito	1010991876221333	2024-04-10
-tar-art-17	art-8	Tarjeta de crédito	9876543215987456	2022-05-03
-tar-art-19	art-10	Tarjeta de debito	7418529637894561	2022-09-11
-tar-art-21	art-11	Tarjeta de debito	5555577777999996	2022-12-28
-tar-art-22	art-11	Tarjeta de debito	8888855555999996	2025-01-16
 tar-art-23	art-7	Tarjeta de debito	1234567897415961	2023-06-16
-tar-art-24	art-12	Tarjeta de crédito	9999997777666548	2023-07-25
+tar-art-25	art-13	Tarjeta de crédito	1234567987894561	2022-03-25
+tar-art-26	art-13	Tarjeta de debito	9876543218524561	2022-05-28
+tar-art-27	art-14	Tarjeta de debito	1234567891354896	2027-06-09
+tar-art-28	art-15	Tarjeta de crédito	4445558887776662	2026-10-06
+tar-art-29	art-15	Tarjeta de debito	2233344558877695	2022-03-10
+tar-art-30	art-17	Tarjeta de debito	4554896213559846	2026-08-12
+tar-art-31	art-17	Tarjeta de debito	5612314506004530	2023-12-29
 \.
 
 
@@ -950,6 +1502,11 @@ tar-art-24	art-12	Tarjeta de crédito	9999997777666548	2023-07-25
 --
 
 COPY public.tarjetas_usuarios (id_tar, id_usu, tipo_tar, numero_tar, fcaducidad_tar) FROM stdin;
+tar-1	usu-1	Tarjeta de debito	1111133337779995	2022-02-12
+tar-3	usu-1	Tarjeta de debito	5555559999878756	2028-01-05
+tar-4	usu-1	Tarjeta de debito	7778884442223369	2024-10-23
+tar-5	usu-2	Tarjeta de debito	8956237845129563	2025-09-23
+tar-6	usu-3	Tarjeta de crédito	1111111111111111	2024-08-20
 \.
 
 
@@ -957,52 +1514,96 @@ COPY public.tarjetas_usuarios (id_tar, id_usu, tipo_tar, numero_tar, fcaducidad_
 -- Data for Name: usuarios; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.usuarios (id_usu, nombre_usu, apellido_usu, email_usu, contrasena_usu, fnacimiento_usu, genero_usu) FROM stdin;
-usu-1	Maite	Perugachi	maite@mail.com	hola	2007-08-24	Mujer
-usu-2	Luis	Perugachi	luis@mail.com	luisf	2002-01-05	Hombre
+COPY public.usuarios (nombres, apellidos, genero, fecha_nacim, id_usu, email_usu, contrasena_usu) FROM stdin;
+Luis	Perugachi	Hombre	2002-01-19	usu-1	luis@mail.com	luis1234
+Maite	Perugachi	Mujer	1995-08-23	usu-2	maite@gmail.com	maite1234
+Pepito	Cerezo	Hombre	1998-04-10	usu-3	pepito@gmail.com	peito12344
 \.
+
+
+--
+-- Name: sec_admin; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.sec_admin', 4, true);
 
 
 --
 -- Name: sec_alb; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.sec_alb', 12, true);
+SELECT pg_catalog.setval('public.sec_alb', 31, true);
 
 
 --
 -- Name: sec_art; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.sec_art', 12, true);
+SELECT pg_catalog.setval('public.sec_art', 17, true);
 
 
 --
 -- Name: sec_can; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.sec_can', 52, true);
+SELECT pg_catalog.setval('public.sec_can', 110, true);
+
+
+--
+-- Name: sec_fac; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.sec_fac', 35, true);
+
+
+--
+-- Name: sec_gen; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.sec_gen', 26, true);
 
 
 --
 -- Name: sec_pla; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.sec_pla', 4, true);
+SELECT pg_catalog.setval('public.sec_pla', 9, true);
 
 
 --
 -- Name: sec_sus; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.sec_sus', 15, true);
+SELECT pg_catalog.setval('public.sec_sus', 19, true);
 
 
 --
 -- Name: sec_tar_art; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.sec_tar_art', 24, true);
+SELECT pg_catalog.setval('public.sec_tar_art', 31, true);
+
+
+--
+-- Name: sec_tar_usu; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.sec_tar_usu', 6, true);
+
+
+--
+-- Name: sec_user; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.sec_user', 3, true);
+
+
+--
+-- Name: administradores pk_administradores; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.administradores
+    ADD CONSTRAINT pk_administradores PRIMARY KEY (id_adm);
 
 
 --
@@ -1035,6 +1636,22 @@ ALTER TABLE ONLY public.canciones
 
 ALTER TABLE ONLY public.facturas
     ADD CONSTRAINT pk_facturas PRIMARY KEY (codigo_fac);
+
+
+--
+-- Name: generos pk_generos; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.generos
+    ADD CONSTRAINT pk_generos PRIMARY KEY (id_gen);
+
+
+--
+-- Name: impuestos pk_impuestos; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.impuestos
+    ADD CONSTRAINT pk_impuestos PRIMARY KEY (id_imp);
 
 
 --
@@ -1163,6 +1780,13 @@ CREATE UNIQUE INDEX facturas_pk ON public.facturas USING btree (codigo_fac);
 
 
 --
+-- Name: generos_pk; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX generos_pk ON public.generos USING btree (id_gen);
+
+
+--
 -- Name: planes_pk; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -1240,6 +1864,27 @@ CREATE TRIGGER t_act_alb_insert AFTER INSERT ON public.canciones FOR EACH ROW EX
 
 
 --
+-- Name: generos t_delete_generos; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER t_delete_generos BEFORE DELETE ON public.generos FOR EACH ROW EXECUTE FUNCTION public.t_delete_generos();
+
+
+--
+-- Name: planes t_delete_planes; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER t_delete_planes BEFORE DELETE ON public.planes FOR EACH ROW EXECUTE FUNCTION public.t_delete_planes();
+
+
+--
+-- Name: administradores t_val_admin; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER t_val_admin BEFORE INSERT OR UPDATE ON public.administradores FOR EACH ROW EXECUTE FUNCTION public.t_val_admin();
+
+
+--
 -- Name: albumes t_val_alb; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
@@ -1258,6 +1903,20 @@ CREATE TRIGGER t_val_art BEFORE INSERT OR UPDATE ON public.artistas FOR EACH ROW
 --
 
 CREATE TRIGGER t_val_can BEFORE INSERT OR UPDATE ON public.canciones FOR EACH ROW EXECUTE FUNCTION public.t_val_can();
+
+
+--
+-- Name: facturas t_val_fac; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER t_val_fac BEFORE INSERT OR UPDATE ON public.facturas FOR EACH ROW EXECUTE FUNCTION public.t_val_fac();
+
+
+--
+-- Name: generos t_val_gen; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER t_val_gen BEFORE INSERT OR UPDATE ON public.generos FOR EACH ROW EXECUTE FUNCTION public.t_val_gen();
 
 
 --
@@ -1282,11 +1941,33 @@ CREATE TRIGGER t_val_tar_art BEFORE INSERT OR UPDATE ON public.tarjetas_artistas
 
 
 --
+-- Name: tarjetas_usuarios t_val_tar_usu; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER t_val_tar_usu BEFORE INSERT OR UPDATE ON public.tarjetas_usuarios FOR EACH ROW EXECUTE FUNCTION public.t_val_tar_usu();
+
+
+--
+-- Name: usuarios t_val_user; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER t_val_user BEFORE INSERT OR UPDATE ON public.usuarios FOR EACH ROW EXECUTE FUNCTION public.t_val_user();
+
+
+--
 -- Name: albumes fk_albumes_artistas__artistas; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.albumes
     ADD CONSTRAINT fk_albumes_artistas__artistas FOREIGN KEY (id_art) REFERENCES public.artistas(id_art) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: albumes fk_albumes_generos__generos; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.albumes
+    ADD CONSTRAINT fk_albumes_generos__generos FOREIGN KEY (id_gen) REFERENCES public.generos(id_gen) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
